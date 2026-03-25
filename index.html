@@ -1,0 +1,2596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Drum Practice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+        }
+
+        .view {
+            display: none;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        header {
+            background: #2a2a2a;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #4a9eff;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .spacer {
+            width: 60px;
+        }
+
+        .song-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .song-item {
+            background: #2a2a2a;
+            padding: 20px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+            font-size: 18px;
+        }
+
+        .song-item-name {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .song-item:active {
+            background: #3a3a3a;
+        }
+
+        .song-item-delete {
+            padding: 6px 14px;
+            background: #ff4a4a;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .song-item-delete:active {
+            background: #e03a3a;
+        }
+
+        .add-song-section {
+            background: #2a2a2a;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 12px;
+        }
+
+        .login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: #2a2a2a;
+            padding: 32px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 2px solid #4a9eff;
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .login-submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: #4aff4a;
+            border: none;
+            color: #1a1a1a;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .login-submit-btn:active {
+            background: #3ae03a;
+        }
+
+        .login-cancel-btn {
+            width: 100%;
+            padding: 12px;
+            background: #3a3a3a;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .login-cancel-btn:active {
+            background: #4a4a4a;
+        }
+
+        .login-error {
+            color: #ff4a4a;
+            text-align: center;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .auth-btn {
+            background: none;
+            border: none;
+            color: #4a9eff;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px;
+            font-weight: 600;
+        }
+
+        .auth-btn.logout {
+            color: #ff6347;
+        }
+
+        .auth-btn:hover {
+            opacity: 0.8;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .add-song-input {
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-song-input input {
+            flex: 1;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 2px solid #4a9eff;
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .add-song-input button {
+            padding: 12px 24px;
+            background: #4aff4a;
+            border: none;
+            color: #1a1a1a;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .add-song-input button:active {
+            background: #3ae03a;
+        }
+
+        .player-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .song-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .subsection-player-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .subsection-player-item {
+            background: #2a2a2a;
+            padding: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .subsection-player-name {
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .subsection-player-name:hover {
+            color: #4a9eff;
+        }
+
+        .subsection-player-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .play-subsection-btn {
+            padding: 10px 20px;
+            background: #4a9eff;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .play-subsection-btn:active {
+            transform: scale(0.95);
+        }
+
+        .play-subsection-btn.playing {
+            background: #ff4a4a;
+        }
+
+        .no-subsections {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+
+        .song-bpm-control {
+            background: #2a2a2a;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .song-bpm-control label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .song-bpm-control input {
+            width: 70px;
+            padding: 8px;
+            font-size: 16px;
+            text-align: center;
+            background: #1a1a1a;
+            border: 2px solid #4a9eff;
+            color: white;
+            border-radius: 6px;
+        }
+
+        .song-bpm-control button {
+            padding: 8px 16px;
+            background: #3a3a3a;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .song-bpm-control button:active {
+            background: #4a4a4a;
+        }
+
+        .action-btn {
+            background: #2a2a2a;
+            border: none;
+            color: #4a9eff;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 8px;
+        }
+
+        .action-btn:active {
+            background: #3a3a3a;
+        }
+
+        .editor-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .subsection-manager {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .subsection-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .subsection-item {
+            background: #1a1a1a;
+            padding: 12px 16px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .subsection-item:hover {
+            background: #252525;
+        }
+
+        .subsection-item.selected {
+            background: #4a9eff;
+            font-weight: 600;
+        }
+
+        .subsection-item button {
+            padding: 4px 12px;
+            background: #ff4a4a;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .add-subsection {
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-subsection input {
+            flex: 1;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 2px solid #4a9eff;
+            color: white;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .add-subsection button {
+            padding: 10px 20px;
+            background: #4aff4a;
+            border: none;
+            color: #1a1a1a;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .beat-setup {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .beat-setup label {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .beat-setup input {
+            width: 80px;
+            padding: 12px;
+            font-size: 20px;
+            text-align: center;
+            background: #1a1a1a;
+            border: 2px solid #4a9eff;
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .beat-setup button {
+            padding: 12px 32px;
+            font-size: 16px;
+        }
+
+        .current-subsection {
+            text-align: center;
+            padding: 8px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #4a9eff;
+            font-weight: 600;
+        }
+
+        .grid-container {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+
+        .beat-grid {
+            display: grid;
+            gap: 4px;
+        }
+
+        .beat-cell {
+            aspect-ratio: 1;
+            min-height: 60px;
+            background: #1a1a1a;
+            border: 2px solid #3a3a3a;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 4px;
+        }
+
+        .beat-cell:active {
+            transform: scale(0.95);
+        }
+
+        .beat-cell.quarter-start {
+            border-left-width: 3px;
+            border-left-color: #666;
+        }
+
+        .beat-cell.playing {
+            box-shadow: inset 0 0 0 3px #4aff4a;
+        }
+
+        .instrument-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .instrument-dot.accent {
+            width: 16px;
+            height: 16px;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+        }
+
+        .instrument-dot.surdo1 {
+            background: #8B4513;
+        }
+
+        .instrument-dot.surdo2 {
+            background: #CD853F;
+        }
+
+        .instrument-dot.dobra {
+            background: #FFD700;
+        }
+
+        .instrument-dot.repi {
+            background: #FF6347;
+        }
+
+        .instrument-dot.snare {
+            background: #4169E1;
+        }
+
+
+        .status-text {
+            text-align: center;
+            color: #666;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            .song-title {
+                font-size: 22px;
+                margin-bottom: 16px;
+            }
+
+            .beat-cell {
+                min-height: 40px;
+                padding: 2px;
+            }
+
+            .instrument-dot {
+                width: 10px;
+                height: 10px;
+            }
+
+            .instrument-dot.accent {
+                width: 14px;
+                height: 14px;
+            }
+
+            .instrument-buttons {
+                gap: 6px;
+            }
+
+            .instrument-btn {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+
+            .playback-toggle-btn {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
+            .bpm-control, .song-bpm-control {
+                flex-wrap: wrap;
+                padding: 10px 12px;
+                gap: 8px;
+            }
+
+            .bpm-control input, .song-bpm-control input {
+                width: 60px;
+                padding: 6px;
+                font-size: 14px;
+            }
+
+            .bpm-control button, .song-bpm-control button {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+
+            .controls-row {
+                flex-wrap: wrap;
+            }
+
+            .controls-row button {
+                flex: 1 1 45%;
+                min-width: 120px;
+                padding: 12px 8px;
+                font-size: 14px;
+            }
+
+            .tap-record-area {
+                min-height: 100px;
+                font-size: 24px;
+            }
+
+            .grid-container {
+                padding: 12px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .beat-grid {
+                gap: 2px;
+                min-width: 100%;
+            }
+
+            .subsection-item {
+                padding: 14px;
+                font-size: 16px;
+            }
+
+            .subsection-player-item {
+                padding: 14px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .subsection-player-name {
+                font-size: 16px;
+                text-align: center;
+            }
+
+            .subsection-player-controls {
+                justify-content: center;
+            }
+
+            .play-subsection-btn {
+                flex: 1;
+                padding: 12px 16px;
+            }
+
+            .beat-setup input {
+                width: 70px;
+                padding: 10px;
+                font-size: 18px;
+            }
+
+            .add-subsection {
+                flex-direction: column;
+            }
+
+            .add-subsection input {
+                width: 100%;
+            }
+
+            .add-subsection button {
+                width: 100%;
+                padding: 12px;
+            }
+
+            .add-song-input {
+                flex-direction: column;
+            }
+
+            .add-song-input input {
+                width: 100%;
+            }
+
+            .add-song-input button {
+                width: 100%;
+                padding: 12px;
+            }
+
+            .song-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                padding: 14px;
+            }
+
+            .song-item-name {
+                text-align: center;
+                font-size: 16px;
+            }
+
+            .song-item-delete {
+                width: 100%;
+                padding: 10px;
+            }
+
+            header {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+
+            .back-btn {
+                font-size: 14px;
+                padding: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .beat-cell {
+                min-height: 35px;
+            }
+
+            .instrument-dot {
+                width: 8px;
+                height: 8px;
+            }
+
+            .instrument-dot.accent {
+                width: 12px;
+                height: 12px;
+            }
+
+            .song-title {
+                font-size: 20px;
+            }
+
+            .instrument-btn {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .playback-toggle-btn {
+                padding: 5px 8px;
+                font-size: 10px;
+            }
+
+            .current-subsection {
+                font-size: 13px;
+                padding: 6px;
+            }
+        }
+
+        .instrument-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .instrument-btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 3px solid transparent;
+            font-size: 14px;
+            background: #2a2a2a;
+            color: white;
+        }
+
+        .instrument-btn:active {
+            transform: scale(0.95);
+        }
+
+        .instrument-btn.selected {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .instrument-btn.surdo1 {
+            color: #8B4513;
+        }
+
+        .instrument-btn.surdo1.selected {
+            background: #8B4513;
+            color: white;
+        }
+
+        .instrument-btn.surdo2 {
+            color: #CD853F;
+        }
+
+        .instrument-btn.surdo2.selected {
+            background: #CD853F;
+            color: white;
+        }
+
+        .instrument-btn.dobra {
+            color: #FFD700;
+        }
+
+        .instrument-btn.dobra.selected {
+            background: #FFD700;
+            color: #000;
+        }
+
+        .instrument-btn.repi {
+            color: #FF6347;
+        }
+
+        .instrument-btn.repi.selected {
+            background: #FF6347;
+            color: white;
+        }
+
+        .instrument-btn.snare {
+            color: #4169E1;
+        }
+
+        .instrument-btn.snare.selected {
+            background: #4169E1;
+            color: white;
+        }
+
+        .playback-toggles {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+        }
+
+        .playback-toggles-title {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .playback-toggle-row {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .playback-toggle-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid;
+            transition: all 0.2s;
+        }
+
+        .playback-toggle-btn.surdo1 {
+            border-color: #8B4513;
+            color: #8B4513;
+            background: transparent;
+        }
+
+        .playback-toggle-btn.surdo1.active {
+            background: #8B4513;
+            color: white;
+        }
+
+        .playback-toggle-btn.surdo2 {
+            border-color: #CD853F;
+            color: #CD853F;
+            background: transparent;
+        }
+
+        .playback-toggle-btn.surdo2.active {
+            background: #CD853F;
+            color: white;
+        }
+
+        .playback-toggle-btn.dobra {
+            border-color: #FFD700;
+            color: #FFD700;
+            background: transparent;
+        }
+
+        .playback-toggle-btn.dobra.active {
+            background: #FFD700;
+            color: #000;
+        }
+
+        .playback-toggle-btn.repi {
+            border-color: #FF6347;
+            color: #FF6347;
+            background: transparent;
+        }
+
+        .playback-toggle-btn.repi.active {
+            background: #FF6347;
+            color: white;
+        }
+
+        .playback-toggle-btn.snare {
+            border-color: #4169E1;
+            color: #4169E1;
+            background: transparent;
+        }
+
+        .playback-toggle-btn.snare.active {
+            background: #4169E1;
+            color: white;
+        }
+
+        .playback-toggle-btn.click {
+            border-color: #888;
+            color: #888;
+            background: transparent;
+        }
+
+        .playback-toggle-btn.click.active {
+            background: #888;
+            color: white;
+        }
+
+        .tap-record-area {
+            background: #2a2a2a;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #666;
+            cursor: pointer;
+            user-select: none;
+            min-height: 120px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tap-record-area.recording {
+            background: #1a3a1a;
+            color: #4aff4a;
+            border: 3px solid #4aff4a;
+        }
+
+        .tap-record-area:active {
+            transform: scale(0.98);
+        }
+
+        .record-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+        }
+
+        .record-status.active {
+            background: #ff4a4a;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .controls-row button {
+            flex: 1;
+        }
+
+        .bpm-control {
+            background: #2a2a2a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .bpm-control label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .bpm-control input {
+            width: 70px;
+            padding: 8px;
+            font-size: 16px;
+            text-align: center;
+            background: #1a1a1a;
+            border: 2px solid #4a9eff;
+            color: white;
+            border-radius: 6px;
+        }
+
+        .bpm-control button {
+            padding: 8px 16px;
+            background: #3a3a3a;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .bpm-control button:active {
+            background: #4a4a4a;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="login-modal hidden">
+        <div class="login-box">
+            <div class="login-title">Login to Edit</div>
+            <input type="password" id="passwordInput" class="login-input" placeholder="Enter password">
+            <button class="login-submit-btn" onclick="attemptLogin()">Login</button>
+            <button class="login-cancel-btn" onclick="closeLoginModal()">Cancel</button>
+            <div id="loginError" class="login-error hidden"></div>
+        </div>
+    </div>
+
+    <!-- Song List View -->
+    <div id="listView" class="view active">
+        <header>
+            <div class="spacer"></div>
+            <h1>Drum Practice</h1>
+            <button class="auth-btn" id="authBtn" onclick="toggleAuth()">Login</button>
+        </header>
+        <div class="song-list">
+            <div class="add-song-section">
+                <div class="add-song-input">
+                    <input type="text" id="newSongName" placeholder="Enter song name">
+                    <button onclick="addSong()">Add Song</button>
+                </div>
+            </div>
+            <div id="songListContainer"></div>
+        </div>
+    </div>
+
+    <!-- Player View -->
+    <div id="playerView" class="view">
+        <header>
+            <button class="back-btn" onclick="showView('list')">← Back</button>
+            <h1>Player</h1>
+            <button class="auth-btn" id="authBtnPlayer" onclick="toggleAuth()">Login</button>
+        </header>
+        <div class="player-content">
+            <div class="song-title" id="playerSongTitle"></div>
+
+            <div class="song-bpm-control" id="songBpmControl">
+                <button onclick="adjustSongBPM(-5)">-</button>
+                <label>Song BPM:</label>
+                <input type="number" id="songBpmInput" value="120" min="40" max="240" onchange="updateSongBPM()">
+                <button onclick="adjustSongBPM(5)">+</button>
+            </div>
+
+            <div class="subsection-player-list" id="subsectionPlayerList"></div>
+            <button class="action-btn" id="editBeatPatternsBtn" onclick="showEditor()" style="margin-top: 16px;">Edit Beat Patterns</button>
+        </div>
+    </div>
+
+    <!-- Editor View -->
+    <div id="editorView" class="view">
+        <header>
+            <button class="back-btn" onclick="showView('player')">← Back</button>
+            <h1>Beat Editor</h1>
+            <button class="auth-btn" id="authBtnEditor" onclick="toggleAuth()">Login</button>
+        </header>
+        <div class="editor-content">
+            <div class="song-title" id="editorSongTitle"></div>
+
+            <div id="subsectionManager" class="subsection-manager" style="display: none;">
+                <div class="subsection-list" id="subsectionList"></div>
+                <div class="add-subsection">
+                    <input type="text" id="newSubsectionName" placeholder="Enter subsection name (e.g., Intro, Verse)">
+                    <button onclick="addSubsection()">Add</button>
+                </div>
+            </div>
+
+            <div id="beatSetup" class="beat-setup">
+                <label>How many measures is the break?</label>
+                <input type="number" id="measureCount" value="1" min="1" max="8">
+                <button class="action-btn" onclick="setupGrid()">Create Grid</button>
+            </div>
+
+            <div id="gridEditor" style="display: none;">
+                <div class="current-subsection" id="currentSubsectionName"></div>
+                <div class="instrument-buttons" id="instrumentButtons"></div>
+
+                <div class="playback-toggles" id="playbackToggles">
+                    <div class="playback-toggles-title">Playback:</div>
+                    <div class="playback-toggle-row" id="playbackToggleRow"></div>
+                </div>
+
+                <div class="bpm-control">
+                    <button onclick="adjustBPM(-5)">-</button>
+                    <label>BPM:</label>
+                    <input type="number" id="bpmInput" value="120" min="40" max="240" onchange="updateBPM()">
+                    <button onclick="adjustBPM(5)">+</button>
+                </div>
+
+                <div class="grid-container" id="gridContainer"></div>
+
+                <div class="tap-record-area" id="tapRecordArea" onclick="handleTap()">
+                    <span id="tapAreaText">Select instrument & press Record</span>
+                    <div class="record-status" id="recordStatus"></div>
+                </div>
+
+                <div class="controls-row" id="editControls">
+                    <button class="action-btn" onclick="backToSubsections()">← Subsections</button>
+                    <button class="action-btn" id="recordBtn" onclick="toggleRecord()">Record</button>
+                    <button class="action-btn" id="playbackBtn" onclick="togglePlayback()">Stop</button>
+                    <button class="action-btn" id="clearBtn" onclick="clearInstruments()">Clear</button>
+                </div>
+
+                <div class="controls-row" id="viewControls" style="display: none;">
+                    <button class="action-btn" onclick="backToPlayer()">← Back to Song</button>
+                    <button class="action-btn" id="viewPlaybackBtn" onclick="togglePlayback()">Stop</button>
+                    <button class="action-btn" onclick="switchToEditMode()">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSong = { name: '', id: '' };
+        let audioContext = null;
+        let isPlaying = false;
+        let savedPatterns = {}; // { songId: { measures, patterns: { instrumentId: [beat positions] } } }
+        let activeTimeouts = [];
+        let currentInstrument = null;
+        let currentBeatIndex = -1;
+        let lastPlayedBeatIndex = -1;
+        let playbackInterval = null;
+        let gridMeasures = 1; // number of measures
+        let gridCols = 16; // sixteenth notes per measure
+        let totalCells = 16; // total number of cells
+        let isRecording = false;
+        let autoPlayEnabled = false;
+        let currentBPM = 120;
+        let currentSubsection = null;
+        let playingSubsection = null;
+        let isViewOnlyMode = false;
+        let activePlaybackInstruments = new Set(); // which instruments are currently playing
+        let songList = []; // List of all songs
+        let isAuthenticated = false;
+        const PASSWORD = 'ineedicecreamtolive';
+
+        const instruments = [
+            { id: 'surdo1', name: 'Surdo 1', shortName: 'S1', frequency: 200, color: '#8B4513' },
+            { id: 'surdo2', name: 'Surdo 2', shortName: 'S2', frequency: 300, color: '#CD853F' },
+            { id: 'dobra', name: 'Dobra', shortName: 'D', frequency: 400, color: '#FFD700' },
+            { id: 'repi', name: 'Repi', shortName: 'R', frequency: 600, color: '#FF6347' },
+            { id: 'snare', name: 'Snare', shortName: 'SN', frequency: 1000, color: '#4169E1' }
+        ];
+
+        // Load saved data on startup
+        function loadFromStorage() {
+            try {
+                const saved = localStorage.getItem('drumPracticeData');
+                if (saved) {
+                    savedPatterns = JSON.parse(saved);
+                    console.log('Loaded saved patterns from storage');
+                }
+
+                const savedSongs = localStorage.getItem('drumPracticeSongList');
+                if (savedSongs) {
+                    songList = JSON.parse(savedSongs);
+                } else {
+                    // Initialize with default songs
+                    songList = [
+                        { name: 'Funky Coconuts', id: 'funky-coconuts' },
+                        { name: 'Valencia', id: 'valencia' },
+                        { name: 'Samba Reggae', id: 'samba-reggae' }
+                    ];
+                    saveSongList();
+                }
+            } catch (e) {
+                console.error('Error loading from storage:', e);
+            }
+        }
+
+        // Save to storage
+        function saveToStorage() {
+            try {
+                localStorage.setItem('drumPracticeData', JSON.stringify(savedPatterns));
+                console.log('Saved patterns to storage');
+            } catch (e) {
+                console.error('Error saving to storage:', e);
+                alert('Error saving data. Storage may be full.');
+            }
+        }
+
+        function saveSongList() {
+            try {
+                localStorage.setItem('drumPracticeSongList', JSON.stringify(songList));
+            } catch (e) {
+                console.error('Error saving song list:', e);
+            }
+        }
+
+        // Authentication functions
+        function toggleAuth() {
+            if (isAuthenticated) {
+                logout();
+            } else {
+                showLoginModal();
+            }
+        }
+
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('passwordInput').focus();
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+        }
+
+        function attemptLogin() {
+            const input = document.getElementById('passwordInput');
+            const password = input.value;
+
+            if (password === PASSWORD) {
+                isAuthenticated = true;
+                sessionStorage.setItem('drumPracticeAuth', 'true');
+                closeLoginModal();
+                updateAuthUI();
+
+                // Update UI based on current view
+                const listView = document.getElementById('listView');
+                if (listView && listView.classList.contains('active')) {
+                    renderSongList();
+                }
+
+                const playerView = document.getElementById('playerView');
+                if (playerView && playerView.classList.contains('active')) {
+                    // Update player UI elements
+                    const editBtn = document.getElementById('editBeatPatternsBtn');
+                    if (editBtn) {
+                        editBtn.classList.remove('hidden');
+                    }
+                    const bpmControl = document.getElementById('songBpmControl');
+                    if (bpmControl) {
+                        const buttons = bpmControl.querySelectorAll('button');
+                        buttons.forEach(btn => btn.classList.remove('hidden'));
+                    }
+                    const songBpmInput = document.getElementById('songBpmInput');
+                    if (songBpmInput) {
+                        songBpmInput.readOnly = false;
+                    }
+                }
+
+                const editorView = document.getElementById('editorView');
+                if (editorView && editorView.classList.contains('active')) {
+                    // If in view-only mode, show the edit button
+                    if (isViewOnlyMode) {
+                        const editModeBtn = document.querySelector('#viewControls button:last-child');
+                        if (editModeBtn) {
+                            editModeBtn.classList.remove('hidden');
+                        }
+                    }
+                }
+            } else {
+                const errorEl = document.getElementById('loginError');
+                errorEl.textContent = 'Incorrect password';
+                errorEl.classList.remove('hidden');
+                input.value = '';
+            }
+        }
+
+        function logout() {
+            isAuthenticated = false;
+            sessionStorage.removeItem('drumPracticeAuth');
+            updateAuthUI();
+
+            // If in editor view, go back to player or list view
+            const editorView = document.getElementById('editorView');
+            if (editorView && editorView.classList.contains('active')) {
+                if (currentSong && currentSong.id) {
+                    showView('player');
+                } else {
+                    showView('list');
+                }
+            }
+
+            renderSongList();
+
+            // Stop recording if active
+            if (isRecording) {
+                toggleRecord();
+            }
+
+            // Stop any playback
+            if (isPlaying) {
+                stopPlayback();
+            }
+            if (playingSubsection) {
+                stopSubsectionPlay();
+            }
+        }
+
+        function updateAuthUI() {
+            const authBtns = ['authBtn', 'authBtnPlayer', 'authBtnEditor'];
+            authBtns.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    if (isAuthenticated) {
+                        btn.textContent = 'Logout';
+                        btn.classList.add('logout');
+                    } else {
+                        btn.textContent = 'Login';
+                        btn.classList.remove('logout');
+                    }
+                }
+            });
+        }
+
+        function checkAuth() {
+            const auth = sessionStorage.getItem('drumPracticeAuth');
+            isAuthenticated = auth === 'true';
+            updateAuthUI();
+        }
+
+        // Load on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            checkAuth();
+            renderSongList();
+
+            // Allow Enter key to submit login
+            document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    attemptLogin();
+                }
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('loginModal').addEventListener('click', (e) => {
+                if (e.target.id === 'loginModal') {
+                    closeLoginModal();
+                }
+            });
+        });
+
+        // Initialize Audio Context
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Create a simple click sound
+        function createClickSound(frequency = 1000, duration = 0.05, volume = 0.3) {
+            initAudio();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        // Create a completion sound (two tone beep)
+        function playCompletionSound() {
+            initAudio();
+
+            // First beep
+            const osc1 = audioContext.createOscillator();
+            const gain1 = audioContext.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioContext.destination);
+            osc1.frequency.value = 1200;
+            osc1.type = 'sine';
+            gain1.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            osc1.start(audioContext.currentTime);
+            osc1.stop(audioContext.currentTime + 0.1);
+
+            // Second beep (slightly higher)
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            osc2.frequency.value = 1400;
+            osc2.type = 'sine';
+            gain2.gain.setValueAtTime(0.3, audioContext.currentTime + 0.15);
+            gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
+            osc2.start(audioContext.currentTime + 0.15);
+            osc2.stop(audioContext.currentTime + 0.25);
+        }
+
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewName + 'View').classList.add('active');
+            updateAuthUI();
+
+            if (viewName === 'list') {
+                renderSongList();
+            }
+        }
+
+        function renderSongList() {
+            const container = document.getElementById('songListContainer');
+            container.innerHTML = '';
+
+            // Show/hide add song section based on auth
+            const addSongSection = document.querySelector('.add-song-section');
+            if (addSongSection) {
+                addSongSection.classList.toggle('hidden', !isAuthenticated);
+            }
+
+            songList.forEach(song => {
+                const item = document.createElement('div');
+                item.className = 'song-item';
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'song-item-name';
+                nameDiv.textContent = song.name;
+                nameDiv.onclick = () => selectSong(song.name, song.id);
+
+                item.appendChild(nameDiv);
+
+                // Only show delete button if authenticated
+                if (isAuthenticated) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'song-item-delete';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteSong(song.id);
+                    };
+                    item.appendChild(deleteBtn);
+                }
+
+                container.appendChild(item);
+            });
+        }
+
+        function addSong() {
+            if (!isAuthenticated) {
+                alert('Please log in to add songs');
+                return;
+            }
+
+            const input = document.getElementById('newSongName');
+            const name = input.value.trim();
+
+            if (!name) {
+                alert('Please enter a song name');
+                return;
+            }
+
+            // Create ID from name
+            const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+            // Check if song already exists
+            if (songList.find(s => s.id === id)) {
+                alert('A song with that name already exists');
+                return;
+            }
+
+            songList.push({ name, id });
+            saveSongList();
+            input.value = '';
+            renderSongList();
+        }
+
+        function deleteSong(songId) {
+            if (!isAuthenticated) {
+                alert('Please log in to delete songs');
+                return;
+            }
+
+            const song = songList.find(s => s.id === songId);
+            if (!song) return;
+
+            if (!confirm(`Delete "${song.name}" and all its subsections?`)) return;
+
+            // Remove from song list
+            songList = songList.filter(s => s.id !== songId);
+            saveSongList();
+
+            // Remove all saved patterns for this song
+            delete savedPatterns[songId];
+            saveToStorage();
+
+            renderSongList();
+        }
+
+        function setupGrid() {
+            if (!isAuthenticated) {
+                alert('Please log in to create grids');
+                return;
+            }
+
+            const measureCount = parseInt(document.getElementById('measureCount').value);
+            if (measureCount < 1 || measureCount > 8) {
+                alert('Please enter a number between 1 and 8');
+                return;
+            }
+
+            if (!currentSubsection) {
+                alert('Please select or add a subsection first');
+                return;
+            }
+
+            isViewOnlyMode = false;
+            gridMeasures = measureCount;
+            gridCols = 16; // always 16 columns (16 sixteenth notes per measure)
+            totalCells = gridMeasures * gridCols; // total sixteenth notes
+
+            savedPatterns[currentSong.id].subsections[currentSubsection] = {
+                measures: gridMeasures,
+                patterns: {}
+            };
+
+            document.getElementById('beatSetup').style.display = 'none';
+            document.getElementById('gridEditor').style.display = 'block';
+            document.getElementById('currentSubsectionName').textContent = currentSubsection;
+
+            // Show edit controls, hide view controls
+            document.getElementById('instrumentButtons').style.display = 'flex';
+            document.getElementById('tapRecordArea').style.display = 'flex';
+            document.getElementById('editControls').style.display = 'flex';
+            document.getElementById('viewControls').style.display = 'none';
+
+            // Initialize playback instruments
+            initializePlaybackInstruments();
+            renderInstrumentButtons();
+            renderPlaybackToggles();
+            renderGrid();
+            updateClearButton();
+            saveToStorage();
+
+            // Auto-start playback
+            startPlayback();
+        }
+
+        function renderInstrumentButtons() {
+            const container = document.getElementById('instrumentButtons');
+            container.innerHTML = '';
+
+            instruments.forEach(instrument => {
+                const btn = document.createElement('div');
+                btn.className = 'instrument-btn ' + instrument.id;
+                if (currentInstrument === instrument.id) {
+                    btn.classList.add('selected');
+                }
+                btn.textContent = instrument.name;
+                btn.onclick = () => selectInstrument(instrument.id);
+                container.appendChild(btn);
+            });
+        }
+
+        function renderPlaybackToggles() {
+            const container = document.getElementById('playbackToggleRow');
+            container.innerHTML = '';
+
+            const subsectionData = savedPatterns[currentSong.id].subsections[currentSubsection];
+
+            // Add click track toggle first
+            const clickBtn = document.createElement('div');
+            clickBtn.className = 'playback-toggle-btn click';
+            if (activePlaybackInstruments.has('click')) {
+                clickBtn.classList.add('active');
+            }
+            clickBtn.textContent = 'Click';
+            clickBtn.onclick = () => toggleInstrumentPlayback('click');
+            container.appendChild(clickBtn);
+
+            // Add instrument toggles
+            instruments.forEach(instrument => {
+                // Only show toggle if this instrument has patterns
+                const pattern = subsectionData.patterns[instrument.id];
+                if (pattern && pattern.length > 0) {
+                    const btn = document.createElement('div');
+                    btn.className = 'playback-toggle-btn ' + instrument.id;
+                    if (activePlaybackInstruments.has(instrument.id)) {
+                        btn.classList.add('active');
+                    }
+                    btn.textContent = instrument.name;
+                    btn.onclick = () => toggleInstrumentPlayback(instrument.id);
+                    container.appendChild(btn);
+                }
+            });
+        }
+
+        function toggleInstrumentPlayback(instrumentId) {
+            if (activePlaybackInstruments.has(instrumentId)) {
+                activePlaybackInstruments.delete(instrumentId);
+            } else {
+                activePlaybackInstruments.add(instrumentId);
+            }
+            renderPlaybackToggles();
+        }
+
+        function initializePlaybackInstruments() {
+            // Enable all instruments that have patterns by default, plus click track
+            activePlaybackInstruments.clear();
+            activePlaybackInstruments.add('click'); // Enable click track by default
+
+            const subsectionData = savedPatterns[currentSong.id].subsections[currentSubsection];
+            instruments.forEach(instrument => {
+                const pattern = subsectionData.patterns[instrument.id];
+                if (pattern && pattern.length > 0) {
+                    activePlaybackInstruments.add(instrument.id);
+                }
+            });
+        }
+
+        function selectInstrument(instrumentId) {
+            currentInstrument = instrumentId;
+            renderInstrumentButtons();
+
+            const instrument = instruments.find(i => i.id === instrumentId);
+            if (!isRecording) {
+                document.getElementById('tapAreaText').textContent = `${instrument.name} - Press Record`;
+            }
+
+            // Update clear button text
+            updateClearButton();
+        }
+
+        function updateClearButton() {
+            const clearBtn = document.getElementById('clearBtn');
+            if (currentInstrument) {
+                const instrument = instruments.find(i => i.id === currentInstrument);
+                clearBtn.textContent = `Clear ${instrument.name}`;
+            } else {
+                clearBtn.textContent = 'Clear All';
+            }
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+
+            const grid = document.createElement('div');
+            grid.className = 'beat-grid';
+            grid.style.gridTemplateColumns = `repeat(${gridCols}, 1fr)`;
+            grid.style.gridTemplateRows = `repeat(${gridMeasures}, 1fr)`;
+
+            for (let i = 0; i < totalCells; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'beat-cell';
+                cell.dataset.step = i;
+
+                // Mark quarter note starts (every 4th sixteenth note within each measure)
+                const posInMeasure = i % gridCols;
+                if (posInMeasure % 4 === 0) {
+                    cell.classList.add('quarter-start');
+                }
+
+                // Add dots for each instrument at this position
+                const subsectionData = savedPatterns[currentSong.id].subsections[currentSubsection];
+                instruments.forEach(instrument => {
+                    const pattern = subsectionData.patterns[instrument.id];
+                    if (pattern) {
+                        const beat = pattern.find(b => b.step === i);
+                        if (beat) {
+                            const dot = document.createElement('div');
+                            dot.className = 'instrument-dot ' + instrument.id;
+                            if (beat.accent) {
+                                dot.classList.add('accent');
+                            }
+                            dot.dataset.instrument = instrument.id;
+                            cell.appendChild(dot);
+                        }
+                    }
+                });
+
+                // Only add edit handlers if not in view-only mode
+                if (!isViewOnlyMode) {
+                    // Add click handler to place/remove beats
+                    cell.onclick = (e) => {
+                        e.stopPropagation();
+                        if (currentInstrument) {
+                            toggleBeatAtPosition(i, false);
+                        }
+                    };
+
+                    // Add double-click handler for accents
+                    cell.ondblclick = (e) => {
+                        e.stopPropagation();
+                        if (currentInstrument) {
+                            toggleBeatAtPosition(i, true);
+                        }
+                    };
+                }
+
+                grid.appendChild(cell);
+            }
+
+            container.appendChild(grid);
+        }
+
+        function toggleBeatAtPosition(stepIndex, forceAccent) {
+            if (!isAuthenticated) {
+                alert('Please log in to edit beats');
+                return;
+            }
+
+            if (!currentInstrument) return;
+
+            const subsectionData = savedPatterns[currentSong.id].subsections[currentSubsection];
+            if (!subsectionData.patterns[currentInstrument]) {
+                subsectionData.patterns[currentInstrument] = [];
+            }
+
+            const pattern = subsectionData.patterns[currentInstrument];
+            const existingBeatIndex = pattern.findIndex(b => b.step === stepIndex);
+
+            if (forceAccent) {
+                // Double-click: add/toggle accent
+                if (existingBeatIndex > -1) {
+                    pattern[existingBeatIndex].accent = !pattern[existingBeatIndex].accent;
+                } else {
+                    pattern.push({ step: stepIndex, accent: true });
+                    pattern.sort((a, b) => a.step - b.step);
+                }
+            } else {
+                // Single-click: toggle beat existence
+                if (existingBeatIndex > -1) {
+                    pattern.splice(existingBeatIndex, 1);
+                } else {
+                    pattern.push({ step: stepIndex, accent: false });
+                    pattern.sort((a, b) => a.step - b.step);
+                }
+            }
+
+            renderGrid();
+            saveToStorage();
+        }
+
+        function toggleBeat(instrumentId, stepIndex) {
+            const songData = savedPatterns[currentSong.id];
+            if (!songData.patterns[instrumentId]) {
+                songData.patterns[instrumentId] = [];
+            }
+
+            const pattern = songData.patterns[instrumentId];
+            const index = pattern.indexOf(stepIndex);
+
+            if (index > -1) {
+                pattern.splice(index, 1);
+            } else {
+                pattern.push(stepIndex);
+                pattern.sort((a, b) => a - b);
+            }
+
+            renderGrid();
+        }
+
+        function toggleRecord() {
+            if (!isAuthenticated) {
+                alert('Please log in to record');
+                return;
+            }
+
+            if (!currentInstrument) {
+                alert('Please select an instrument first!');
+                return;
+            }
+
+            isRecording = !isRecording;
+
+            const tapArea = document.getElementById('tapRecordArea');
+            const recordBtn = document.getElementById('recordBtn');
+            const recordStatus = document.getElementById('recordStatus');
+            const tapText = document.getElementById('tapAreaText');
+
+            if (isRecording) {
+                tapArea.classList.add('recording');
+                recordBtn.textContent = 'Stop';
+                recordStatus.classList.add('active');
+                tapText.textContent = 'TAP';
+
+                // Make sure playback is running
+                if (!isPlaying) {
+                    startPlayback();
+                }
+            } else {
+                tapArea.classList.remove('recording');
+                recordBtn.textContent = 'Record';
+                recordStatus.classList.remove('active');
+                const instrument = instruments.find(i => i.id === currentInstrument);
+                tapText.textContent = `${instrument.name} - Press Record`;
+            }
+        }
+
+        function handleTap() {
+            if (!isRecording || !currentInstrument || lastPlayedBeatIndex < 0) {
+                return;
+            }
+
+            // Add beat at the last played position (the beat the user is hearing)
+            const subsectionData = savedPatterns[currentSong.id].subsections[currentSubsection];
+            if (!subsectionData.patterns[currentInstrument]) {
+                subsectionData.patterns[currentInstrument] = [];
+            }
+
+            const pattern = subsectionData.patterns[currentInstrument];
+            const existingBeatIndex = pattern.findIndex(b => b.step === lastPlayedBeatIndex);
+
+            if (existingBeatIndex > -1) {
+                // Remove if already exists
+                pattern.splice(existingBeatIndex, 1);
+            } else {
+                // Add if doesn't exist
+                pattern.push({ step: lastPlayedBeatIndex, accent: false });
+                pattern.sort((a, b) => a.step - b.step);
+            }
+
+            renderGrid();
+            saveToStorage();
+        }
+
+        function clearInstruments() {
+            if (!isAuthenticated) {
+                alert('Please log in to clear instruments');
+                return;
+            }
+
+            const subsectionData = savedPatterns[currentSong.id].subsections[currentSubsection];
+
+            if (currentInstrument) {
+                // Clear only the selected instrument
+                const instrument = instruments.find(i => i.id === currentInstrument);
+                if (confirm(`Clear all ${instrument.name} beats in this subsection?`)) {
+                    delete subsectionData.patterns[currentInstrument];
+                    renderGrid();
+                    renderPlaybackToggles();
+                    saveToStorage();
+
+                    // Restart the loop from the beginning
+                    if (isPlaying) {
+                        stopPlayback();
+                        startPlayback();
+                    }
+                }
+            } else {
+                // Clear all instruments
+                if (confirm('Clear all instruments in this subsection?')) {
+                    subsectionData.patterns = {};
+                    renderGrid();
+                    renderPlaybackToggles();
+                    saveToStorage();
+
+                    // Restart the loop from the beginning
+                    if (isPlaying) {
+                        stopPlayback();
+                        startPlayback();
+                    }
+                }
+            }
+        }
+
+        function selectSong(name, id) {
+            currentSong = { name, id };
+            document.getElementById('playerSongTitle').textContent = name;
+            showView('player');
+            updateAuthUI();
+
+            // Initialize song patterns if needed
+            if (!savedPatterns[id]) {
+                savedPatterns[id] = {
+                    subsections: {},
+                    bpm: 120
+                };
+                saveToStorage();
+            }
+
+            // Set BPM from song data
+            if (!savedPatterns[id].bpm) {
+                savedPatterns[id].bpm = 120;
+                saveToStorage();
+            }
+
+            currentBPM = savedPatterns[id].bpm;
+            const songBpmInput = document.getElementById('songBpmInput');
+            songBpmInput.value = currentBPM;
+            songBpmInput.readOnly = !isAuthenticated;
+
+            // Show/hide BPM control buttons based on auth
+            const bpmControl = document.getElementById('songBpmControl');
+            if (bpmControl) {
+                const buttons = bpmControl.querySelectorAll('button');
+                buttons.forEach(btn => btn.classList.toggle('hidden', !isAuthenticated));
+            }
+
+            // Show/hide edit button based on auth
+            const editBtn = document.getElementById('editBeatPatternsBtn');
+            if (editBtn) {
+                editBtn.classList.toggle('hidden', !isAuthenticated);
+            }
+
+            renderSubsectionPlayerList();
+        }
+
+        function renderSubsectionPlayerList() {
+            const list = document.getElementById('subsectionPlayerList');
+            list.innerHTML = '';
+
+            const songData = savedPatterns[currentSong.id];
+            const subsections = songData?.subsections || {};
+            const subsectionNames = Object.keys(subsections);
+
+            if (subsectionNames.length === 0) {
+                const noSubsections = document.createElement('div');
+                noSubsections.className = 'no-subsections';
+                noSubsections.textContent = 'No subsections recorded yet. Click "Edit Beat Patterns" to create one.';
+                list.appendChild(noSubsections);
+                return;
+            }
+
+            subsectionNames.forEach(subsectionName => {
+                const item = document.createElement('div');
+                item.className = 'subsection-player-item';
+
+                const nameSpan = document.createElement('div');
+                nameSpan.className = 'subsection-player-name';
+                nameSpan.textContent = subsectionName;
+                nameSpan.onclick = () => editSubsection(subsectionName);
+
+                const controls = document.createElement('div');
+                controls.className = 'subsection-player-controls';
+
+                const playBtn = document.createElement('button');
+                playBtn.className = 'play-subsection-btn';
+                playBtn.id = `play-${subsectionName}`;
+                playBtn.textContent = '▶ Play';
+                playBtn.onclick = () => toggleSubsectionPlay(subsectionName);
+
+                controls.appendChild(playBtn);
+                item.appendChild(nameSpan);
+                item.appendChild(controls);
+                list.appendChild(item);
+            });
+        }
+
+        function toggleSubsectionPlay(subsectionName) {
+            if (playingSubsection === subsectionName && isPlaying) {
+                stopSubsectionPlay();
+            } else {
+                playSubsection(subsectionName);
+            }
+        }
+
+        function playSubsection(subsectionName) {
+            // Stop any currently playing subsection
+            if (isPlaying) {
+                stopSubsectionPlay();
+            }
+
+            playingSubsection = subsectionName;
+            currentSubsection = subsectionName;
+
+            const subsectionData = savedPatterns[currentSong.id].subsections[subsectionName];
+            gridMeasures = subsectionData.measures;
+            gridCols = 16;
+            totalCells = gridMeasures * gridCols;
+
+            // Use song-level BPM
+            currentBPM = savedPatterns[currentSong.id].bpm || 120;
+
+            const playBtn = document.getElementById(`play-${subsectionName}`);
+            playBtn.textContent = '⏸ Stop';
+            playBtn.classList.add('playing');
+
+            startPlayback();
+        }
+
+        function stopSubsectionPlay() {
+            if (playingSubsection) {
+                const playBtn = document.getElementById(`play-${playingSubsection}`);
+                if (playBtn) {
+                    playBtn.textContent = '▶ Play';
+                    playBtn.classList.remove('playing');
+                }
+            }
+
+            stopPlayback();
+            playingSubsection = null;
+        }
+
+        function editSubsection(subsectionName) {
+            // Stop any playing audio
+            if (isPlaying) {
+                stopSubsectionPlay();
+            }
+
+            // Navigate to view-only grid
+            isViewOnlyMode = true;
+            currentSubsection = subsectionName;
+            const subsectionData = savedPatterns[currentSong.id].subsections[subsectionName];
+
+            document.getElementById('editorSongTitle').textContent = currentSong.name;
+            showView('editor');
+            updateAuthUI();
+
+            document.getElementById('subsectionManager').style.display = 'none';
+            document.getElementById('beatSetup').style.display = 'none';
+            document.getElementById('gridEditor').style.display = 'block';
+            document.getElementById('currentSubsectionName').textContent = subsectionName;
+
+            // Hide edit controls, show view controls
+            document.getElementById('instrumentButtons').style.display = 'none';
+            document.getElementById('tapRecordArea').style.display = 'none';
+            document.getElementById('editControls').style.display = 'none';
+            document.getElementById('viewControls').style.display = 'flex';
+
+            gridMeasures = subsectionData.measures;
+            gridCols = 16;
+            totalCells = gridMeasures * gridCols;
+
+            // Use song-level BPM
+            currentBPM = savedPatterns[currentSong.id].bpm || 120;
+            document.getElementById('bpmInput').value = currentBPM;
+
+            // Initialize playback instruments
+            initializePlaybackInstruments();
+            renderPlaybackToggles();
+            renderGrid();
+
+            // Hide Edit button if not authenticated
+            const editModeBtn = document.querySelector('#viewControls button:last-child');
+            if (editModeBtn) {
+                editModeBtn.classList.toggle('hidden', !isAuthenticated);
+            }
+
+            // Auto-start playback
+            startPlayback();
+        }
+
+        function switchToEditMode() {
+            if (!isAuthenticated) {
+                alert('Please log in to edit');
+                return;
+            }
+
+            isViewOnlyMode = false;
+
+            // Show edit controls, hide view controls
+            document.getElementById('instrumentButtons').style.display = 'flex';
+            document.getElementById('tapRecordArea').style.display = 'flex';
+            document.getElementById('editControls').style.display = 'flex';
+            document.getElementById('viewControls').style.display = 'none';
+
+            renderInstrumentButtons();
+            renderPlaybackToggles();
+            renderGrid();
+            updateClearButton();
+        }
+
+        function backToPlayer() {
+            if (isPlaying) {
+                stopPlayback();
+            }
+            isViewOnlyMode = false;
+            showView('player');
+            renderSubsectionPlayerList();
+        }
+
+        function togglePlay() {
+            initAudio();
+            const playBtn = document.getElementById('playBtn');
+
+            if (isPlaying) {
+                stopPlay();
+            } else {
+                startPlay();
+            }
+        }
+
+        function startPlay() {
+            isPlaying = true;
+            const playBtn = document.getElementById('playBtn');
+            playBtn.textContent = '⏸';
+            playBtn.classList.add('playing');
+
+            // Play the recorded pattern or default beat
+            playLoop();
+        }
+
+        function stopPlay() {
+            isPlaying = false;
+            const playBtn = document.getElementById('playBtn');
+            playBtn.textContent = '▶';
+            playBtn.classList.remove('playing');
+
+            // Clear all active timeouts to prevent overlapping
+            activeTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+            activeTimeouts = [];
+        }
+
+        function playLoop() {
+            if (!isPlaying) return;
+
+            const songData = savedPatterns[currentSong.id];
+            const subsectionData = currentSubsection ? songData?.subsections?.[currentSubsection] : null;
+            const hasPatterns = subsectionData && subsectionData.measures && subsectionData.patterns && Object.keys(subsectionData.patterns).length > 0;
+
+            if (hasPatterns) {
+                const totalSteps = subsectionData.measures * 16; // sixteenth notes (16 per measure)
+                const stepDuration = (60000 / currentBPM) / 4; // BPM to 16th note duration
+
+                // Play click track on quarter notes if enabled
+                if (activePlaybackInstruments.has('click')) {
+                    for (let i = 0; i < totalSteps; i += 4) {
+                        const timeoutId = setTimeout(() => {
+                            if (isPlaying) createClickSound(1500, 0.03, 0.12);
+                        }, i * stepDuration);
+                        activeTimeouts.push(timeoutId);
+                    }
+                }
+
+                // Play instrument patterns (only if enabled)
+                instruments.forEach(instrument => {
+                    if (activePlaybackInstruments.has(instrument.id)) {
+                        const pattern = subsectionData.patterns[instrument.id];
+                        if (pattern) {
+                            pattern.forEach((beat) => {
+                                const timeoutId = setTimeout(() => {
+                                    if (isPlaying) {
+                                        const volume = beat.accent ? 0.7 : 0.3;
+                                        createClickSound(instrument.frequency, 0.05, volume);
+                                    }
+                                }, beat.step * stepDuration);
+                                activeTimeouts.push(timeoutId);
+                            });
+                        }
+                    }
+                });
+
+                const loopTimeoutId = setTimeout(() => {
+                    if (isPlaying) playLoop();
+                }, totalSteps * stepDuration);
+                activeTimeouts.push(loopTimeoutId);
+            } else {
+                // Play default simple beat with click
+                const interval = 500;
+                for (let i = 0; i < 4; i++) {
+                    const timeoutId = setTimeout(() => {
+                        if (isPlaying) {
+                            createClickSound(1500, 0.03, 0.12); // Quiet click track
+                            if (i === 0) createClickSound(800, 0.05, 0.3); // Accent first beat
+                        }
+                    }, i * interval);
+                    activeTimeouts.push(timeoutId);
+                }
+                const loopTimeoutId = setTimeout(() => {
+                    if (isPlaying) playLoop();
+                }, 2000);
+                activeTimeouts.push(loopTimeoutId);
+            }
+        }
+
+        function showEditor() {
+            if (!isAuthenticated) {
+                alert('Please log in to edit beat patterns');
+                return;
+            }
+
+            // Stop any playing audio
+            if (isPlaying) {
+                stopSubsectionPlay();
+            }
+
+            document.getElementById('editorSongTitle').textContent = currentSong.name;
+            showView('editor');
+            updateAuthUI();
+
+            const songData = savedPatterns[currentSong.id];
+            const hasSubsections = songData && songData.subsections && Object.keys(songData.subsections).length > 0;
+
+            if (hasSubsections) {
+                // Show subsection manager
+                document.getElementById('subsectionManager').style.display = 'block';
+                document.getElementById('beatSetup').style.display = 'none';
+                document.getElementById('gridEditor').style.display = 'none';
+                renderSubsectionList();
+            } else {
+                // First time - show subsection manager
+                document.getElementById('subsectionManager').style.display = 'block';
+                document.getElementById('beatSetup').style.display = 'none';
+                document.getElementById('gridEditor').style.display = 'none';
+                renderSubsectionList();
+            }
+        }
+
+        function renderSubsectionList() {
+            const list = document.getElementById('subsectionList');
+            list.innerHTML = '';
+
+            const songData = savedPatterns[currentSong.id];
+            if (songData && songData.subsections) {
+                Object.keys(songData.subsections).forEach(subsectionName => {
+                    const item = document.createElement('div');
+                    item.className = 'subsection-item';
+                    if (currentSubsection === subsectionName) {
+                        item.classList.add('selected');
+                    }
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = subsectionName;
+                    nameSpan.onclick = () => selectSubsection(subsectionName);
+
+                    item.appendChild(nameSpan);
+
+                    // Only show delete button if authenticated
+                    if (isAuthenticated) {
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            deleteSubsection(subsectionName);
+                        };
+                        item.appendChild(deleteBtn);
+                    }
+
+                    list.appendChild(item);
+                });
+            }
+
+            if (list.children.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.style.color = '#666';
+                emptyMsg.style.padding = '20px';
+                emptyMsg.textContent = 'No subsections yet. Add one below!';
+                list.appendChild(emptyMsg);
+            }
+        }
+
+        function addSubsection() {
+            if (!isAuthenticated) {
+                alert('Please log in to add subsections');
+                return;
+            }
+
+            const input = document.getElementById('newSubsectionName');
+            const name = input.value.trim();
+
+            if (!name) {
+                alert('Please enter a subsection name');
+                return;
+            }
+
+            const songData = savedPatterns[currentSong.id];
+            if (songData.subsections[name]) {
+                alert('A subsection with that name already exists');
+                return;
+            }
+
+            currentSubsection = name;
+            document.getElementById('subsectionManager').style.display = 'none';
+            document.getElementById('beatSetup').style.display = 'block';
+            document.getElementById('gridEditor').style.display = 'none';
+            input.value = '';
+            saveToStorage();
+        }
+
+        function selectSubsection(name) {
+            if (!isAuthenticated) {
+                alert('Please log in to edit subsections');
+                return;
+            }
+
+            isViewOnlyMode = false;
+            currentSubsection = name;
+            const subsectionData = savedPatterns[currentSong.id].subsections[name];
+
+            document.getElementById('subsectionManager').style.display = 'none';
+            document.getElementById('beatSetup').style.display = 'none';
+            document.getElementById('gridEditor').style.display = 'block';
+            document.getElementById('currentSubsectionName').textContent = name;
+
+            // Show edit controls, hide view controls
+            document.getElementById('instrumentButtons').style.display = 'flex';
+            document.getElementById('tapRecordArea').style.display = 'flex';
+            document.getElementById('editControls').style.display = 'flex';
+            document.getElementById('viewControls').style.display = 'none';
+
+            gridMeasures = subsectionData.measures;
+            gridCols = 16;
+            totalCells = gridMeasures * gridCols;
+
+            // Use song-level BPM
+            currentBPM = savedPatterns[currentSong.id].bpm || 120;
+            document.getElementById('bpmInput').value = currentBPM;
+
+            // Initialize playback instruments
+            initializePlaybackInstruments();
+            renderInstrumentButtons();
+            renderPlaybackToggles();
+            renderGrid();
+            updateClearButton();
+
+            // Always auto-start playback
+            startPlayback();
+        }
+
+        function deleteSubsection(name) {
+            if (!isAuthenticated) {
+                alert('Please log in to delete subsections');
+                return;
+            }
+
+            if (!confirm(`Delete "${name}"?`)) return;
+
+            delete savedPatterns[currentSong.id].subsections[name];
+            if (currentSubsection === name) {
+                currentSubsection = null;
+            }
+            renderSubsectionList();
+            saveToStorage();
+        }
+
+
+
+        function togglePlayback() {
+            if (isPlayingPreview) {
+                stopPlayback();
+            } else {
+                startPlayback();
+            }
+        }
+
+        function togglePlayback() {
+            if (isPlaying) {
+                stopPlayback();
+            } else {
+                startPlayback();
+            }
+        }
+
+        function startPlayback() {
+            initAudio();
+            isPlaying = true;
+
+            const playBtn = isViewOnlyMode ? document.getElementById('viewPlaybackBtn') : document.getElementById('playbackBtn');
+            if (playBtn) {
+                playBtn.textContent = 'Stop';
+            }
+
+            playGridLoop();
+        }
+
+        function stopPlayback() {
+            isPlaying = false;
+
+            const playBtn = isViewOnlyMode ? document.getElementById('viewPlaybackBtn') : document.getElementById('playbackBtn');
+            if (playBtn) {
+                playBtn.textContent = 'Play';
+            }
+
+            // Clear visual indicators
+            currentBeatIndex = -1;
+            lastPlayedBeatIndex = -1;
+            updateBeatHighlights();
+
+            if (playbackInterval) {
+                clearInterval(playbackInterval);
+                playbackInterval = null;
+            }
+
+            // Stop recording if active
+            if (isRecording) {
+                toggleRecord();
+            }
+        }
+
+        function playGridLoop() {
+            if (!isPlaying) return;
+
+            // Clear any existing interval first
+            if (playbackInterval) {
+                clearInterval(playbackInterval);
+            }
+
+            const subsectionData = savedPatterns[currentSong.id].subsections[currentSubsection];
+            const totalSteps = totalCells;
+            const stepDuration = (60000 / currentBPM) / 4; // BPM to 16th note duration
+
+            currentBeatIndex = 0;
+
+            playbackInterval = setInterval(() => {
+                if (!isPlaying) {
+                    clearInterval(playbackInterval);
+                    playbackInterval = null;
+                    return;
+                }
+
+                // Track which beat is currently playing (before incrementing)
+                lastPlayedBeatIndex = currentBeatIndex;
+
+                // Play click track on quarter notes (every 4th sixteenth note) if enabled
+                if (activePlaybackInstruments.has('click') && currentBeatIndex % 4 === 0) {
+                    createClickSound(1500, 0.03, 0.12); // Quiet click track
+                }
+
+                // Play instrument sounds for this step (only if enabled)
+                instruments.forEach(instrument => {
+                    if (activePlaybackInstruments.has(instrument.id)) {
+                        const pattern = subsectionData.patterns[instrument.id];
+                        if (pattern) {
+                            const beat = pattern.find(b => b.step === currentBeatIndex);
+                            if (beat) {
+                                const volume = beat.accent ? 0.7 : 0.3; // Accented beats much louder
+                                createClickSound(instrument.frequency, 0.05, volume);
+                            }
+                        }
+                    }
+                });
+
+                updateBeatHighlights();
+
+                // Increment at the end, so lastPlayedBeatIndex stays stable during the step
+                currentBeatIndex = (currentBeatIndex + 1) % totalSteps;
+            }, stepDuration);
+        }
+
+        function updateBeatHighlights() {
+            const cells = document.querySelectorAll('.beat-cell');
+            cells.forEach(cell => {
+                const step = parseInt(cell.dataset.step);
+                if (step === currentBeatIndex) {
+                    cell.classList.add('playing');
+                } else {
+                    cell.classList.remove('playing');
+                }
+            });
+        }
+
+        function stopPlay() {
+            isPlaying = false;
+
+            // Clear all active timeouts to prevent overlapping
+            activeTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+            activeTimeouts = [];
+
+            if (playbackInterval) {
+                clearInterval(playbackInterval);
+                playbackInterval = null;
+            }
+
+            currentBeatIndex = -1;
+        }
+
+        function adjustBPM(delta) {
+            const input = document.getElementById('bpmInput');
+            let newBPM = parseInt(input.value) + delta;
+            newBPM = Math.max(40, Math.min(240, newBPM));
+            input.value = newBPM;
+            updateBPM();
+        }
+
+        function adjustSongBPM(delta) {
+            if (!isAuthenticated) {
+                alert('Please log in to change BPM');
+                return;
+            }
+
+            const input = document.getElementById('songBpmInput');
+            let newBPM = parseInt(input.value) + delta;
+            newBPM = Math.max(40, Math.min(240, newBPM));
+            input.value = newBPM;
+            updateSongBPM();
+        }
+
+        function updateSongBPM() {
+            if (!isAuthenticated) {
+                alert('Please log in to change BPM');
+                // Reset to saved value
+                const savedBPM = savedPatterns[currentSong.id].bpm || 120;
+                document.getElementById('songBpmInput').value = savedBPM;
+                return;
+            }
+
+            const input = document.getElementById('songBpmInput');
+            let newBPM = parseInt(input.value);
+
+            if (isNaN(newBPM) || newBPM < 40) {
+                newBPM = 40;
+            } else if (newBPM > 240) {
+                newBPM = 240;
+            }
+
+            input.value = newBPM;
+
+            // Save to song data
+            savedPatterns[currentSong.id].bpm = newBPM;
+            saveToStorage();
+
+            // Update current BPM for any playing subsection
+            currentBPM = newBPM;
+
+            // Restart playback if currently playing to apply new BPM
+            if (isPlaying) {
+                stopSubsectionPlay();
+                // Restart the playing subsection if there is one
+                if (playingSubsection) {
+                    setTimeout(() => playSubsection(playingSubsection), 100);
+                }
+            }
+        }
+
+        function updateBPM() {
+            const input = document.getElementById('bpmInput');
+            let newBPM = parseInt(input.value);
+
+            if (isNaN(newBPM) || newBPM < 40) {
+                newBPM = 40;
+            } else if (newBPM > 240) {
+                newBPM = 240;
+            }
+
+            input.value = newBPM;
+            currentBPM = newBPM;
+
+            // Note: This is a local change only, doesn't save to song level
+
+            // Restart playback if currently playing to apply new BPM
+            if (isPlaying) {
+                stopPlayback();
+                startPlayback();
+            }
+        }
+
+        function backToSubsections() {
+            if (isPlaying) {
+                stopPlayback();
+            }
+            if (isRecording) {
+                toggleRecord();
+            }
+
+            document.getElementById('subsectionManager').style.display = 'block';
+            document.getElementById('beatSetup').style.display = 'none';
+            document.getElementById('gridEditor').style.display = 'none';
+            renderSubsectionList();
+        }
+    </script>
+</body>
+</html>
