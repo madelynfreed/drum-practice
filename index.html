@@ -520,7 +520,6 @@
             border-radius: 8px;
             padding: 16px;
             margin-bottom: 16px;
-            overflow-x: auto;
         }
 
         .beat-grid {
@@ -608,18 +607,26 @@
             }
 
             .beat-cell {
-                min-height: 40px;
-                padding: 2px;
+                min-height: 30px;
+                padding: 1px;
             }
 
             .instrument-dot {
-                width: 10px;
-                height: 10px;
+                width: 8px;
+                height: 8px;
             }
 
             .instrument-dot.accent {
-                width: 14px;
-                height: 14px;
+                width: 11px;
+                height: 11px;
+            }
+
+            .grid-container {
+                padding: 8px;
+            }
+
+            .beat-grid {
+                gap: 2px;
             }
 
             .instrument-buttons {
@@ -669,16 +676,6 @@
                 font-size: 24px;
             }
 
-            .grid-container {
-                padding: 12px;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .beat-grid {
-                gap: 2px;
-                min-width: 100%;
-            }
 
             .subsection-item {
                 padding: 14px;
@@ -771,17 +768,26 @@
 
         @media (max-width: 480px) {
             .beat-cell {
-                min-height: 35px;
+                min-height: 24px;
+                padding: 1px;
             }
 
             .instrument-dot {
-                width: 8px;
-                height: 8px;
+                width: 6px;
+                height: 6px;
             }
 
             .instrument-dot.accent {
-                width: 12px;
-                height: 12px;
+                width: 9px;
+                height: 9px;
+            }
+
+            .grid-container {
+                padding: 6px;
+            }
+
+            .beat-grid {
+                gap: 1px;
             }
 
             .song-title {
