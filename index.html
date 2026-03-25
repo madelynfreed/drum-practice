@@ -209,6 +209,33 @@
             display: none !important;
         }
 
+        .data-controls {
+            background: #2a2a2a;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 12px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .data-controls button {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 16px;
+            background: #3a3a3a;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .data-controls button:active {
+            background: #4a4a4a;
+        }
+
         .add-song-input {
             display: flex;
             gap: 8px;
@@ -1067,6 +1094,11 @@
             <button class="auth-btn" id="authBtn" onclick="toggleAuth()">Login</button>
         </header>
         <div class="song-list">
+            <div class="data-controls">
+                <button onclick="exportData()">📥 Export Data</button>
+                <button onclick="document.getElementById('importFile').click()">📤 Import Data</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            </div>
             <div class="add-song-section">
                 <div class="add-song-input">
                     <input type="text" id="newSongName" placeholder="Enter song name">
@@ -1362,6 +1394,62 @@
             const auth = sessionStorage.getItem('drumPracticeAuth');
             isAuthenticated = auth === 'true';
             updateAuthUI();
+        }
+
+        // Export/Import functions
+        function exportData() {
+            const data = {
+                version: 1,
+                exportDate: new Date().toISOString(),
+                songList: songList,
+                savedPatterns: savedPatterns
+            };
+
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `drum-practice-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    if (!data.songList || !data.savedPatterns) {
+                        alert('Invalid backup file format');
+                        return;
+                    }
+
+                    const confirmMsg = `This will replace all current data with the backup from ${data.exportDate ? new Date(data.exportDate).toLocaleString() : 'unknown date'}.\n\nCurrent songs will be lost. Continue?`;
+
+                    if (confirm(confirmMsg)) {
+                        songList = data.songList;
+                        savedPatterns = data.savedPatterns;
+                        saveSongList();
+                        saveToStorage();
+                        renderSongList();
+                        alert('Data imported successfully!');
+                    }
+                } catch (error) {
+                    console.error('Import error:', error);
+                    alert('Error reading backup file. Please make sure it\'s a valid backup.');
+                }
+            };
+            reader.readAsText(file);
+
+            // Reset the file input so the same file can be imported again if needed
+            event.target.value = '';
         }
 
         // Load on page load
