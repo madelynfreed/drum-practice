@@ -1669,7 +1669,8 @@
             document.getElementById('editControls').style.display = 'flex';
             document.getElementById('viewControls').style.display = 'none';
 
-            // Initialize playback instruments
+            // Reset and initialize playback instruments
+            activePlaybackInstruments.clear();
             initializePlaybackInstruments();
             renderInstrumentButtons();
             renderPlaybackToggles();
@@ -1740,15 +1741,20 @@
         }
 
         function initializePlaybackInstruments() {
-            // Enable all instruments that have patterns by default, plus click track
-            activePlaybackInstruments.clear();
-            activePlaybackInstruments.add('click'); // Enable click track by default
+            // Always enable click track
+            if (!activePlaybackInstruments.has('click')) {
+                activePlaybackInstruments.add('click');
+            }
 
+            // Enable any new instruments that have patterns
             const subsectionData = savedPatterns[currentSong.id].subsections[currentSubsection];
             instruments.forEach(instrument => {
                 const pattern = subsectionData.patterns[instrument.id];
                 if (pattern && pattern.length > 0) {
-                    activePlaybackInstruments.add(instrument.id);
+                    // Add instrument if it has patterns and isn't already in the set
+                    if (!activePlaybackInstruments.has(instrument.id)) {
+                        activePlaybackInstruments.add(instrument.id);
+                    }
                 }
             });
         }
@@ -1873,7 +1879,10 @@
                 }
             }
 
+            // Update playback instruments to include newly added patterns
+            initializePlaybackInstruments();
             renderGrid();
+            renderPlaybackToggles();
             saveToStorage();
         }
 
@@ -1956,7 +1965,10 @@
                 pattern.sort((a, b) => a.step - b.step);
             }
 
+            // Update playback instruments to include newly added patterns
+            initializePlaybackInstruments();
             renderGrid();
+            renderPlaybackToggles();
             saveToStorage();
         }
 
@@ -1973,6 +1985,8 @@
                 const instrument = instruments.find(i => i.id === currentInstrument);
                 if (confirm(`Clear all ${instrument.name} beats in this subsection?`)) {
                     delete subsectionData.patterns[currentInstrument];
+                    // Remove from active playback
+                    activePlaybackInstruments.delete(currentInstrument);
                     renderGrid();
                     renderPlaybackToggles();
                     saveToStorage();
@@ -1987,6 +2001,8 @@
                 // Clear all instruments
                 if (confirm('Clear all instruments in this subsection?')) {
                     subsectionData.patterns = {};
+                    // Remove all instruments from active playback (keep click track)
+                    instruments.forEach(inst => activePlaybackInstruments.delete(inst.id));
                     renderGrid();
                     renderPlaybackToggles();
                     saveToStorage();
@@ -2108,6 +2124,16 @@
             // Use song-level BPM
             currentBPM = savedPatterns[currentSong.id].bpm || 120;
 
+            // Reset and initialize playback instruments for this subsection
+            activePlaybackInstruments.clear();
+            activePlaybackInstruments.add('click');
+            instruments.forEach(instrument => {
+                const pattern = subsectionData.patterns[instrument.id];
+                if (pattern && pattern.length > 0) {
+                    activePlaybackInstruments.add(instrument.id);
+                }
+            });
+
             const playBtn = document.getElementById(`play-${subsectionName}`);
             playBtn.textContent = '⏸ Stop';
             playBtn.classList.add('playing');
@@ -2162,7 +2188,8 @@
             currentBPM = savedPatterns[currentSong.id].bpm || 120;
             document.getElementById('bpmInput').value = currentBPM;
 
-            // Initialize playback instruments
+            // Reset and initialize playback instruments for this subsection
+            activePlaybackInstruments.clear();
             initializePlaybackInstruments();
             renderPlaybackToggles();
             renderGrid();
@@ -2434,7 +2461,8 @@
             currentBPM = savedPatterns[currentSong.id].bpm || 120;
             document.getElementById('bpmInput').value = currentBPM;
 
-            // Initialize playback instruments
+            // Reset and initialize playback instruments for this subsection
+            activePlaybackInstruments.clear();
             initializePlaybackInstruments();
             renderInstrumentButtons();
             renderPlaybackToggles();
