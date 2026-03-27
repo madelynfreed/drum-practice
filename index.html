@@ -1672,8 +1672,6 @@
             const container = document.getElementById('playbackToggleRow');
             container.innerHTML = '';
 
-            const subsectionData = savedPatterns[currentSong.id].subsections[currentSubsection];
-
             // Add click track toggle first
             const clickBtn = document.createElement('div');
             clickBtn.className = 'playback-toggle-btn click';
@@ -1684,20 +1682,16 @@
             clickBtn.onclick = () => toggleInstrumentPlayback('click');
             container.appendChild(clickBtn);
 
-            // Add instrument toggles
+            // Add all instrument toggles (show all instruments, not just ones with patterns)
             instruments.forEach(instrument => {
-                // Only show toggle if this instrument has patterns
-                const pattern = subsectionData.patterns[instrument.id];
-                if (pattern && pattern.length > 0) {
-                    const btn = document.createElement('div');
-                    btn.className = 'playback-toggle-btn ' + instrument.id;
-                    if (activePlaybackInstruments.has(instrument.id)) {
-                        btn.classList.add('active');
-                    }
-                    btn.textContent = instrument.name;
-                    btn.onclick = () => toggleInstrumentPlayback(instrument.id);
-                    container.appendChild(btn);
+                const btn = document.createElement('div');
+                btn.className = 'playback-toggle-btn ' + instrument.id;
+                if (activePlaybackInstruments.has(instrument.id)) {
+                    btn.classList.add('active');
                 }
+                btn.textContent = instrument.name;
+                btn.onclick = () => toggleInstrumentPlayback(instrument.id);
+                container.appendChild(btn);
             });
         }
 
@@ -1838,19 +1832,25 @@
                 } else {
                     pattern.push({ step: stepIndex, accent: true });
                     pattern.sort((a, b) => a.step - b.step);
+                    // Enable playback for this instrument immediately
+                    activePlaybackInstruments.add(currentInstrument);
                 }
             } else {
                 // Single-click: toggle beat existence
                 if (existingBeatIndex > -1) {
                     pattern.splice(existingBeatIndex, 1);
+                    // If pattern is now empty, optionally remove from playback
+                    if (pattern.length === 0) {
+                        activePlaybackInstruments.delete(currentInstrument);
+                    }
                 } else {
                     pattern.push({ step: stepIndex, accent: false });
                     pattern.sort((a, b) => a.step - b.step);
+                    // Enable playback for this instrument immediately
+                    activePlaybackInstruments.add(currentInstrument);
                 }
             }
 
-            // Update playback instruments to include newly added patterns
-            initializePlaybackInstruments();
             renderGrid();
             renderPlaybackToggles();
             saveToStorage();
@@ -1929,14 +1929,18 @@
             if (existingBeatIndex > -1) {
                 // Remove if already exists
                 pattern.splice(existingBeatIndex, 1);
+                // If pattern is now empty, optionally remove from playback
+                if (pattern.length === 0) {
+                    activePlaybackInstruments.delete(currentInstrument);
+                }
             } else {
                 // Add if doesn't exist
                 pattern.push({ step: lastPlayedBeatIndex, accent: false });
                 pattern.sort((a, b) => a.step - b.step);
+                // Enable playback for this instrument immediately
+                activePlaybackInstruments.add(currentInstrument);
             }
 
-            // Update playback instruments to include newly added patterns
-            initializePlaybackInstruments();
             renderGrid();
             renderPlaybackToggles();
             saveToStorage();
