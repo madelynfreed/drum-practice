@@ -74,20 +74,25 @@
             padding: 20px;
             margin-bottom: 12px;
             border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .song-item-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.2s;
-            font-size: 18px;
+            margin-bottom: 8px;
         }
 
         .song-item-name {
             cursor: pointer;
             flex: 1;
+            font-size: 18px;
+            font-weight: 600;
         }
 
-        .song-item:active {
-            background: #3a3a3a;
+        .song-item-name:hover {
+            color: #4a9eff;
         }
 
         .song-item-delete {
@@ -103,6 +108,51 @@
 
         .song-item-delete:active {
             background: #e03a3a;
+        }
+
+        .subsection-list {
+            padding-left: 20px;
+            margin-top: 8px;
+        }
+
+        .subsection-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .subsection-list-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .subsection-list-name {
+            flex: 1;
+            color: #ccc;
+        }
+
+        .subsection-play-btn {
+            padding: 6px 16px;
+            background: #4a9eff;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .subsection-play-btn:active {
+            background: #3a8eef;
+        }
+
+        .subsection-play-btn.playing {
+            background: #ff4a4a;
         }
 
         .add-song-section {
@@ -732,6 +782,16 @@
             .song-item-delete {
                 width: 100%;
                 padding: 10px;
+            }
+
+            .subsection-list-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+
+            .subsection-play-btn {
+                width: 100%;
             }
 
             header {
@@ -1700,12 +1760,16 @@
                 const item = document.createElement('div');
                 item.className = 'song-item';
 
+                // Song header
+                const header = document.createElement('div');
+                header.className = 'song-item-header';
+
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'song-item-name';
                 nameDiv.textContent = song.name;
                 nameDiv.onclick = () => selectSong(song.name, song.id);
 
-                item.appendChild(nameDiv);
+                header.appendChild(nameDiv);
 
                 // Only show delete button if authenticated
                 if (isAuthenticated) {
@@ -1716,7 +1780,51 @@
                         e.stopPropagation();
                         deleteSong(song.id);
                     };
-                    item.appendChild(deleteBtn);
+                    header.appendChild(deleteBtn);
+                }
+
+                item.appendChild(header);
+
+                // Subsections list
+                const songData = savedPatterns[song.id];
+                if (songData && songData.subsections) {
+                    const subsectionNames = Object.keys(songData.subsections);
+                    if (subsectionNames.length > 0) {
+                        const subList = document.createElement('div');
+                        subList.className = 'subsection-list';
+
+                        subsectionNames.forEach(subsectionName => {
+                            const subItem = document.createElement('div');
+                            subItem.className = 'subsection-list-item';
+
+                            const subName = document.createElement('div');
+                            subName.className = 'subsection-list-name';
+                            subName.textContent = `• ${subsectionName}`;
+
+                            const playBtn = document.createElement('button');
+                            playBtn.className = 'subsection-play-btn';
+                            playBtn.id = `list-play-${song.id}-${subsectionName.replace(/\s+/g, '-')}`;
+
+                            // Check if this is currently playing
+                            if (playingSubsection === subsectionName && currentSong.id === song.id && isPlaying) {
+                                playBtn.textContent = 'Stop';
+                                playBtn.classList.add('playing');
+                            } else {
+                                playBtn.textContent = 'Play';
+                            }
+
+                            playBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                toggleSubsectionPlayFromList(song.id, song.name, subsectionName);
+                            };
+
+                            subItem.appendChild(subName);
+                            subItem.appendChild(playBtn);
+                            subList.appendChild(subItem);
+                        });
+
+                        item.appendChild(subList);
+                    }
                 }
 
                 container.appendChild(item);
@@ -2341,6 +2449,50 @@
             }
         }
 
+        function toggleSubsectionPlayFromList(songId, songName, subsectionName) {
+            if (playingSubsection === subsectionName && currentSong.id === songId && isPlaying) {
+                stopSubsectionPlay();
+            } else {
+                playSubsectionFromList(songId, songName, subsectionName);
+            }
+        }
+
+        function playSubsectionFromList(songId, songName, subsectionName) {
+            // Stop any currently playing subsection
+            if (isPlaying) {
+                stopSubsectionPlay();
+            }
+
+            // Set current song
+            currentSong = { name: songName, id: songId };
+            playingSubsection = subsectionName;
+            currentSubsection = subsectionName;
+
+            const subsectionData = savedPatterns[songId].subsections[subsectionName];
+            gridMeasures = subsectionData.measures;
+            gridCols = 16;
+            totalCells = gridMeasures * gridCols;
+
+            // Use song-level BPM
+            currentBPM = savedPatterns[songId].bpm || 120;
+
+            // Reset and initialize playback instruments for this subsection
+            activePlaybackInstruments.clear();
+            activePlaybackInstruments.add('click');
+            instruments.forEach(instrument => {
+                const pattern = subsectionData.patterns[instrument.id];
+                if (pattern && pattern.length > 0) {
+                    activePlaybackInstruments.add(instrument.id);
+                }
+            });
+
+            const playBtn = document.getElementById(`list-play-${songId}-${subsectionName.replace(/\s+/g, '-')}`);
+            playBtn.textContent = 'Stop';
+            playBtn.classList.add('playing');
+
+            startPlayback();
+        }
+
         function playSubsection(subsectionName) {
             // Stop any currently playing subsection
             if (isPlaying) {
@@ -2376,11 +2528,19 @@
         }
 
         function stopSubsectionPlay() {
-            if (playingSubsection) {
+            if (playingSubsection && currentSong) {
+                // Try to find play button in player view
                 const playBtn = document.getElementById(`play-${playingSubsection}`);
                 if (playBtn) {
                     playBtn.textContent = '▶ Play';
                     playBtn.classList.remove('playing');
+                }
+
+                // Try to find play button in list view
+                const listPlayBtn = document.getElementById(`list-play-${currentSong.id}-${playingSubsection.replace(/\s+/g, '-')}`);
+                if (listPlayBtn) {
+                    listPlayBtn.textContent = 'Play';
+                    listPlayBtn.classList.remove('playing');
                 }
             }
 
