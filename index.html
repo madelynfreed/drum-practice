@@ -1062,6 +1062,14 @@
             position: relative;
         }
 
+        .tap-record-area.countdown {
+            background: #3a3a1a;
+            color: #ffaa4a;
+            border: 3px solid #ffaa4a;
+            font-size: 48px;
+            font-weight: bold;
+        }
+
         .tap-record-area.recording {
             background: #1a3a1a;
             color: #4aff4a;
@@ -1070,6 +1078,10 @@
 
         .tap-record-area:active {
             transform: scale(0.98);
+        }
+
+        .tap-record-area:not(.recording):not(.countdown):hover {
+            background: #333;
         }
 
         .record-status {
@@ -1239,14 +1251,14 @@
 
                 <div class="grid-container" id="gridContainer"></div>
 
-                <div class="tap-record-area" id="tapRecordArea" onclick="handleTap()">
-                    <span id="tapAreaText">Select instrument & press Record</span>
+                <div class="tap-record-area" id="tapRecordArea" onclick="handleTapArea()">
+                    <span id="tapAreaText">Select instrument & tap to record</span>
                     <div class="record-status" id="recordStatus"></div>
                 </div>
 
                 <div class="controls-row" id="editControls">
                     <button class="action-btn" onclick="backToSubsections()">← Subsections</button>
-                    <button class="action-btn" id="recordBtn" onclick="toggleRecord()">Record</button>
+                    <button class="action-btn" id="stopRecordBtn" onclick="stopRecording()" style="display: none;">Stop Recording</button>
                     <button class="action-btn" id="playbackBtn" onclick="togglePlayback()">Stop</button>
                     <button class="action-btn" id="clearBtn" onclick="clearInstruments()">Clear</button>
                 </div>
@@ -1737,6 +1749,9 @@
             document.getElementById('editControls').style.display = 'flex';
             document.getElementById('viewControls').style.display = 'none';
 
+            // Update tap area text
+            document.getElementById('tapAreaText').textContent = 'Select instrument & tap to record';
+
             // Use song-level BPM
             currentBPM = savedPatterns[currentSong.id].bpm || 120;
             const bpmInput = document.getElementById('bpmInput');
@@ -1840,7 +1855,7 @@
 
             const instrument = instruments.find(i => i.id === instrumentId);
             if (!isRecording) {
-                document.getElementById('tapAreaText').textContent = `${instrument.name} - Press Record`;
+                document.getElementById('tapAreaText').textContent = `${instrument.name} - Tap to record`;
             }
 
             // Update clear button text
@@ -1986,7 +2001,17 @@
             renderGrid();
         }
 
-        function toggleRecord() {
+        function handleTapArea() {
+            if (isRecording) {
+                // Already recording, so this is a tap to record a beat
+                handleTap();
+            } else {
+                // Not recording, so start recording with countdown
+                startRecording();
+            }
+        }
+
+        function startRecording() {
             if (!isAuthenticated) {
                 alert('Please log in to record');
                 return;
@@ -1998,55 +2023,66 @@
             }
 
             const tapArea = document.getElementById('tapRecordArea');
-            const recordBtn = document.getElementById('recordBtn');
+            const stopRecordBtn = document.getElementById('stopRecordBtn');
             const recordStatus = document.getElementById('recordStatus');
             const tapText = document.getElementById('tapAreaText');
 
-            if (!isRecording) {
-                // Starting recording - do countdown first
-                recordBtn.disabled = true;
+            // Stop current playback
+            if (isPlaying) {
+                stopPlayback();
+            }
 
-                // Stop current playback
-                if (isPlaying) {
-                    stopPlayback();
+            // Add countdown class
+            tapArea.classList.add('countdown');
+
+            // Calculate beat duration based on BPM (quarter note)
+            const beatDuration = 60000 / currentBPM;
+
+            // Countdown: 4, 3, 2, 1
+            let count = 4;
+            tapText.textContent = count.toString();
+            createClickSound(1200, 0.05, 0.4); // Countdown beep
+
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    tapText.textContent = count.toString();
+                    createClickSound(1200, 0.05, 0.4); // Countdown beep
+                } else {
+                    clearInterval(countdownInterval);
+
+                    // Start recording
+                    isRecording = true;
+                    tapArea.classList.remove('countdown');
+                    tapArea.classList.add('recording');
+                    recordStatus.classList.add('active');
+                    tapText.textContent = 'TAP';
+                    stopRecordBtn.style.display = 'block';
+
+                    // Start playback from the beginning
+                    startPlayback();
                 }
+            }, beatDuration); // Use BPM-based timing
+        }
 
-                // Calculate beat duration based on BPM (quarter note)
-                const beatDuration = 60000 / currentBPM;
+        function stopRecording() {
+            isRecording = false;
 
-                // Countdown: 4, 3, 2, 1
-                let count = 4;
-                tapText.textContent = count.toString();
-                createClickSound(1200, 0.05, 0.4); // Countdown beep
+            const tapArea = document.getElementById('tapRecordArea');
+            const stopRecordBtn = document.getElementById('stopRecordBtn');
+            const recordStatus = document.getElementById('recordStatus');
+            const tapText = document.getElementById('tapAreaText');
 
-                const countdownInterval = setInterval(() => {
-                    count--;
-                    if (count > 0) {
-                        tapText.textContent = count.toString();
-                        createClickSound(1200, 0.05, 0.4); // Countdown beep
-                    } else {
-                        clearInterval(countdownInterval);
+            tapArea.classList.remove('recording');
+            tapArea.classList.remove('countdown');
+            recordStatus.classList.remove('active');
+            stopRecordBtn.style.display = 'none';
 
-                        // Start recording
-                        isRecording = true;
-                        tapArea.classList.add('recording');
-                        recordBtn.textContent = 'Stop';
-                        recordBtn.disabled = false;
-                        recordStatus.classList.add('active');
-                        tapText.textContent = 'TAP';
-
-                        // Start playback from the beginning
-                        startPlayback();
-                    }
-                }, beatDuration); // Use BPM-based timing
-            } else {
-                // Stop recording
-                isRecording = false;
-                tapArea.classList.remove('recording');
-                recordBtn.textContent = 'Record';
-                recordStatus.classList.remove('active');
+            if (currentInstrument) {
                 const instrument = instruments.find(i => i.id === currentInstrument);
-                tapText.textContent = `${instrument.name} - Press Record`;
+                tapText.textContent = `${instrument.name} - Tap to record`;
+            } else {
+                tapText.textContent = 'Select instrument & tap to record';
             }
         }
 
@@ -2339,6 +2375,14 @@
             document.getElementById('editControls').style.display = 'flex';
             document.getElementById('viewControls').style.display = 'none';
 
+            // Update tap area text
+            if (currentInstrument) {
+                const instrument = instruments.find(i => i.id === currentInstrument);
+                document.getElementById('tapAreaText').textContent = `${instrument.name} - Tap to record`;
+            } else {
+                document.getElementById('tapAreaText').textContent = 'Select instrument & tap to record';
+            }
+
             // Enable BPM editing
             const bpmInput = document.getElementById('bpmInput');
             bpmInput.readOnly = false;
@@ -2585,6 +2629,9 @@
             document.getElementById('editControls').style.display = 'flex';
             document.getElementById('viewControls').style.display = 'none';
 
+            // Update tap area text
+            document.getElementById('tapAreaText').textContent = 'Select instrument & tap to record';
+
             gridMeasures = subsectionData.measures;
             gridCols = 16;
             totalCells = gridMeasures * gridCols;
@@ -2680,7 +2727,7 @@
 
             // Stop recording if active
             if (isRecording) {
-                toggleRecord();
+                stopRecording();
             }
         }
 
