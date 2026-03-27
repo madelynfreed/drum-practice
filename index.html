@@ -1749,8 +1749,13 @@
             document.getElementById('editControls').style.display = 'flex';
             document.getElementById('viewControls').style.display = 'none';
 
-            // Update tap area text
+            // Update tap area text and reset recording state
+            const tapArea = document.getElementById('tapRecordArea');
+            tapArea.classList.remove('recording', 'countdown');
             document.getElementById('tapAreaText').textContent = 'Select instrument & tap to record';
+            document.getElementById('recordStatus').classList.remove('active');
+            document.getElementById('stopRecordBtn').style.display = 'none';
+            isRecording = false;
 
             // Use song-level BPM
             currentBPM = savedPatterns[currentSong.id].bpm || 120;
@@ -2375,7 +2380,13 @@
             document.getElementById('editControls').style.display = 'flex';
             document.getElementById('viewControls').style.display = 'none';
 
-            // Update tap area text
+            // Update tap area text and reset recording state
+            const tapArea = document.getElementById('tapRecordArea');
+            tapArea.classList.remove('recording', 'countdown');
+            document.getElementById('recordStatus').classList.remove('active');
+            document.getElementById('stopRecordBtn').style.display = 'none';
+            isRecording = false;
+
             if (currentInstrument) {
                 const instrument = instruments.find(i => i.id === currentInstrument);
                 document.getElementById('tapAreaText').textContent = `${instrument.name} - Tap to record`;
@@ -2629,8 +2640,13 @@
             document.getElementById('editControls').style.display = 'flex';
             document.getElementById('viewControls').style.display = 'none';
 
-            // Update tap area text
+            // Update tap area text and reset recording state
+            const tapArea = document.getElementById('tapRecordArea');
+            tapArea.classList.remove('recording', 'countdown');
             document.getElementById('tapAreaText').textContent = 'Select instrument & tap to record';
+            document.getElementById('recordStatus').classList.remove('active');
+            document.getElementById('stopRecordBtn').style.display = 'none';
+            isRecording = false;
 
             gridMeasures = subsectionData.measures;
             gridCols = 16;
