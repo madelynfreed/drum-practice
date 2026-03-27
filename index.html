@@ -1239,6 +1239,11 @@
 
                 <div class="grid-container" id="gridContainer"></div>
 
+                <div class="tap-record-area" id="tapRecordArea" onclick="handleTapArea()">
+                    <span id="tapAreaText">Select instrument & tap to record</span>
+                    <div class="record-status" id="recordStatus"></div>
+                </div>
+
                 <div class="playback-toggles" id="playbackToggles">
                     <div class="playback-toggles-title">Playback:</div>
                     <div class="playback-toggle-row" id="playbackToggleRow"></div>
@@ -1249,11 +1254,6 @@
                     <label>BPM:</label>
                     <input type="number" id="bpmInput" value="120" min="40" max="240" onchange="updateBPM()">
                     <button onclick="adjustBPM(5)">+</button>
-                </div>
-
-                <div class="tap-record-area" id="tapRecordArea" onclick="handleTapArea()">
-                    <span id="tapAreaText">Select instrument & tap to record</span>
-                    <div class="record-status" id="recordStatus"></div>
                 </div>
 
                 <div class="controls-row" id="editControls">
