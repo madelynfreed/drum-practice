@@ -3010,6 +3010,32 @@
 
             currentBeatIndex = 0;
 
+            // Play the first beat immediately to sync with countdown
+            lastPlayedBeatIndex = currentBeatIndex;
+
+            // Play click track on quarter notes (every 4th sixteenth note) if enabled
+            if (activePlaybackInstruments.has('click') && currentBeatIndex % 4 === 0) {
+                createClickSound(1500, 0.03, 0.12); // Quiet click track
+            }
+
+            // Play instrument sounds for this step (only if enabled)
+            instruments.forEach(instrument => {
+                if (activePlaybackInstruments.has(instrument.id)) {
+                    const pattern = subsectionData.patterns[instrument.id];
+                    if (pattern) {
+                        const beat = pattern.find(b => b.step === currentBeatIndex);
+                        if (beat) {
+                            const volume = beat.accent ? 0.7 : 0.3; // Accented beats much louder
+                            createClickSound(instrument.frequency, 0.05, volume);
+                        }
+                    }
+                }
+            });
+
+            updateBeatHighlights();
+            currentBeatIndex = 1; // Move to next beat
+
+            // Then start interval for subsequent beats
             playbackInterval = setInterval(() => {
                 if (!isPlaying) {
                     clearInterval(playbackInterval);
