@@ -1456,8 +1456,16 @@
             }
 
             try {
-                // Load song list
-                database.ref('songList').once('value').then((snapshot) => {
+                // Load patterns first, then song list
+                database.ref('savedPatterns').once('value').then((snapshot) => {
+                    if (snapshot.exists()) {
+                        savedPatterns = snapshot.val();
+                        console.log('Loaded patterns from Firebase');
+                    }
+
+                    // Then load song list and render
+                    return database.ref('songList').once('value');
+                }).then((snapshot) => {
                     if (snapshot.exists()) {
                         songList = snapshot.val();
                         console.log('Loaded song list from Firebase');
@@ -1470,19 +1478,12 @@
                         ];
                         saveSongList();
                     }
+                    // Render song list after both are loaded
                     renderSongList();
                 }).catch((error) => {
-                    console.error('Error loading song list:', error);
-                });
-
-                // Load patterns
-                database.ref('savedPatterns').once('value').then((snapshot) => {
-                    if (snapshot.exists()) {
-                        savedPatterns = snapshot.val();
-                        console.log('Loaded patterns from Firebase');
-                    }
-                }).catch((error) => {
-                    console.error('Error loading patterns:', error);
+                    console.error('Error loading from Firebase:', error);
+                    // Try to render anyway with what we have
+                    renderSongList();
                 });
             } catch (e) {
                 console.error('Error loading from storage:', e);
