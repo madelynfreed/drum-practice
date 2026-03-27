@@ -1126,13 +1126,11 @@
             border: 3px solid #ff4a4a;
         }
 
-        .play-icon {
-            width: 0;
-            height: 0;
-            border-left: 30px solid #ff4a4a;
-            border-top: 20px solid transparent;
-            border-bottom: 20px solid transparent;
-            margin-left: 6px;
+        .record-icon {
+            width: 40px;
+            height: 40px;
+            background: #ff4a4a;
+            border-radius: 50%;
         }
 
         .stop-icon {
@@ -1304,7 +1302,7 @@
                         <div class="record-status" id="recordStatus"></div>
                     </div>
                     <button class="record-toggle-btn" id="recordToggleBtn" onclick="toggleRecordButton()">
-                        <div class="play-icon" id="playIcon"></div>
+                        <div class="record-icon" id="recordIcon"></div>
                         <div class="stop-icon" id="stopIcon" style="display: none;"></div>
                     </button>
                 </div>
@@ -1816,13 +1814,13 @@
             // Update tap area text and reset recording state
             const tapArea = document.getElementById('tapRecordArea');
             const recordToggleBtn = document.getElementById('recordToggleBtn');
-            const playIcon = document.getElementById('playIcon');
+            const recordIcon = document.getElementById('recordIcon');
             const stopIcon = document.getElementById('stopIcon');
             tapArea.classList.remove('recording', 'countdown');
             recordToggleBtn.classList.remove('recording', 'countdown');
             document.getElementById('tapAreaText').textContent = 'Select instrument & tap here';
             document.getElementById('recordStatus').classList.remove('active');
-            playIcon.style.display = 'block';
+            recordIcon.style.display = 'block';
             stopIcon.style.display = 'none';
             isRecording = false;
 
@@ -2100,7 +2098,7 @@
             const recordToggleBtn = document.getElementById('recordToggleBtn');
             const recordStatus = document.getElementById('recordStatus');
             const tapText = document.getElementById('tapAreaText');
-            const playIcon = document.getElementById('playIcon');
+            const recordIcon = document.getElementById('recordIcon');
             const stopIcon = document.getElementById('stopIcon');
 
             // Stop current playback
@@ -2111,7 +2109,7 @@
             // Add countdown class
             tapArea.classList.add('countdown');
             recordToggleBtn.classList.add('countdown');
-            playIcon.style.display = 'none';
+            recordIcon.style.display = 'none';
 
             // Calculate beat duration based on BPM (quarter note)
             const beatDuration = 60000 / currentBPM;
@@ -2155,7 +2153,7 @@
             const recordToggleBtn = document.getElementById('recordToggleBtn');
             const recordStatus = document.getElementById('recordStatus');
             const tapText = document.getElementById('tapAreaText');
-            const playIcon = document.getElementById('playIcon');
+            const recordIcon = document.getElementById('recordIcon');
             const stopIcon = document.getElementById('stopIcon');
 
             tapArea.classList.remove('recording');
@@ -2163,7 +2161,7 @@
             recordToggleBtn.classList.remove('recording');
             recordToggleBtn.classList.remove('countdown');
             recordStatus.classList.remove('active');
-            playIcon.style.display = 'block';
+            recordIcon.style.display = 'block';
             stopIcon.style.display = 'none';
 
             if (currentInstrument) {
@@ -2466,12 +2464,12 @@
             // Update tap area text and reset recording state
             const tapArea = document.getElementById('tapRecordArea');
             const recordToggleBtn = document.getElementById('recordToggleBtn');
-            const playIcon = document.getElementById('playIcon');
+            const recordIcon = document.getElementById('recordIcon');
             const stopIcon = document.getElementById('stopIcon');
             tapArea.classList.remove('recording', 'countdown');
             recordToggleBtn.classList.remove('recording', 'countdown');
             document.getElementById('recordStatus').classList.remove('active');
-            playIcon.style.display = 'block';
+            recordIcon.style.display = 'block';
             stopIcon.style.display = 'none';
             isRecording = false;
 
@@ -2731,13 +2729,13 @@
             // Update tap area text and reset recording state
             const tapArea = document.getElementById('tapRecordArea');
             const recordToggleBtn = document.getElementById('recordToggleBtn');
-            const playIcon = document.getElementById('playIcon');
+            const recordIcon = document.getElementById('recordIcon');
             const stopIcon = document.getElementById('stopIcon');
             tapArea.classList.remove('recording', 'countdown');
             recordToggleBtn.classList.remove('recording', 'countdown');
             document.getElementById('tapAreaText').textContent = 'Select instrument & tap here';
             document.getElementById('recordStatus').classList.remove('active');
-            playIcon.style.display = 'block';
+            recordIcon.style.display = 'block';
             stopIcon.style.display = 'none';
             isRecording = false;
 
