@@ -2011,6 +2011,9 @@
                     stopPlayback();
                 }
 
+                // Calculate beat duration based on BPM (quarter note)
+                const beatDuration = 60000 / currentBPM;
+
                 // Countdown: 4, 3, 2, 1
                 let count = 4;
                 tapText.textContent = count.toString();
@@ -2035,7 +2038,7 @@
                         // Start playback from the beginning
                         startPlayback();
                     }
-                }, 500); // 500ms between counts
+                }, beatDuration); // Use BPM-based timing
             } else {
                 // Stop recording
                 isRecording = false;
