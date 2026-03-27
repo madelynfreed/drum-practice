@@ -792,6 +792,89 @@
             }
         }
 
+        /* Landscape mode - make grid smaller to fit on screen */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .beat-cell {
+                min-height: 18px;
+                padding: 1px;
+            }
+
+            .instrument-dot {
+                width: 5px;
+                height: 5px;
+            }
+
+            .instrument-dot.accent {
+                width: 7px;
+                height: 7px;
+            }
+
+            .grid-container {
+                padding: 4px;
+            }
+
+            .beat-grid {
+                gap: 1px;
+            }
+
+            .current-subsection {
+                font-size: 12px;
+                padding: 4px;
+                margin-bottom: 8px;
+            }
+
+            .instrument-buttons {
+                gap: 4px;
+                margin-bottom: 8px;
+            }
+
+            .instrument-btn {
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+
+            .playback-toggles {
+                padding: 6px 8px;
+                margin-bottom: 8px;
+            }
+
+            .playback-toggle-btn {
+                padding: 4px 6px;
+                font-size: 9px;
+            }
+
+            .bpm-control {
+                padding: 6px 8px;
+                margin-bottom: 8px;
+                gap: 6px;
+            }
+
+            .bpm-control input {
+                width: 50px;
+                padding: 4px;
+                font-size: 12px;
+            }
+
+            .bpm-control button {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+
+            .tap-record-area {
+                min-height: 60px;
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+
+            header {
+                padding: 8px;
+            }
+
+            h1 {
+                font-size: 16px;
+            }
+        }
+
         .instrument-buttons {
             display: flex;
             gap: 8px;
