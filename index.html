@@ -1143,7 +1143,7 @@
                     <div class="playback-toggle-row" id="playbackToggleRow"></div>
                 </div>
 
-                <div class="bpm-control">
+                <div class="bpm-control" id="editorBpmControl">
                     <button onclick="adjustBPM(-5)">-</button>
                     <label>BPM:</label>
                     <input type="number" id="bpmInput" value="120" min="40" max="240" onchange="updateBPM()">
@@ -1365,6 +1365,17 @@
                         const editModeBtn = document.querySelector('#viewControls button:last-child');
                         if (editModeBtn) {
                             editModeBtn.classList.remove('hidden');
+                        }
+                    } else {
+                        // In edit mode, enable BPM controls
+                        const bpmInput = document.getElementById('bpmInput');
+                        if (bpmInput) {
+                            bpmInput.readOnly = false;
+                        }
+                        const editorBpmControl = document.getElementById('editorBpmControl');
+                        if (editorBpmControl) {
+                            const buttons = editorBpmControl.querySelectorAll('button');
+                            buttons.forEach(btn => btn.classList.remove('hidden'));
                         }
                     }
                 }
@@ -1638,6 +1649,19 @@
             document.getElementById('tapRecordArea').style.display = 'flex';
             document.getElementById('editControls').style.display = 'flex';
             document.getElementById('viewControls').style.display = 'none';
+
+            // Use song-level BPM
+            currentBPM = savedPatterns[currentSong.id].bpm || 120;
+            const bpmInput = document.getElementById('bpmInput');
+            bpmInput.value = currentBPM;
+            bpmInput.readOnly = !isAuthenticated;
+
+            // Show/hide BPM control buttons based on auth
+            const editorBpmControl = document.getElementById('editorBpmControl');
+            if (editorBpmControl) {
+                const buttons = editorBpmControl.querySelectorAll('button');
+                buttons.forEach(btn => btn.classList.toggle('hidden', !isAuthenticated));
+            }
 
             // Reset and initialize playback instruments
             activePlaybackInstruments.clear();
@@ -2160,7 +2184,16 @@
 
             // Use song-level BPM
             currentBPM = savedPatterns[currentSong.id].bpm || 120;
-            document.getElementById('bpmInput').value = currentBPM;
+            const bpmInput = document.getElementById('bpmInput');
+            bpmInput.value = currentBPM;
+            bpmInput.readOnly = true; // Always read-only in view mode
+
+            // Hide BPM control buttons in view mode
+            const editorBpmControl = document.getElementById('editorBpmControl');
+            if (editorBpmControl) {
+                const buttons = editorBpmControl.querySelectorAll('button');
+                buttons.forEach(btn => btn.classList.add('hidden'));
+            }
 
             // Reset and initialize playback instruments for this subsection
             activePlaybackInstruments.clear();
@@ -2191,6 +2224,17 @@
             document.getElementById('tapRecordArea').style.display = 'flex';
             document.getElementById('editControls').style.display = 'flex';
             document.getElementById('viewControls').style.display = 'none';
+
+            // Enable BPM editing
+            const bpmInput = document.getElementById('bpmInput');
+            bpmInput.readOnly = false;
+
+            // Show BPM control buttons
+            const editorBpmControl = document.getElementById('editorBpmControl');
+            if (editorBpmControl) {
+                const buttons = editorBpmControl.querySelectorAll('button');
+                buttons.forEach(btn => btn.classList.remove('hidden'));
+            }
 
             renderInstrumentButtons();
             renderPlaybackToggles();
@@ -2433,7 +2477,16 @@
 
             // Use song-level BPM
             currentBPM = savedPatterns[currentSong.id].bpm || 120;
-            document.getElementById('bpmInput').value = currentBPM;
+            const bpmInput = document.getElementById('bpmInput');
+            bpmInput.value = currentBPM;
+            bpmInput.readOnly = !isAuthenticated;
+
+            // Show/hide BPM control buttons based on auth
+            const editorBpmControl = document.getElementById('editorBpmControl');
+            if (editorBpmControl) {
+                const buttons = editorBpmControl.querySelectorAll('button');
+                buttons.forEach(btn => btn.classList.toggle('hidden', !isAuthenticated));
+            }
 
             // Reset and initialize playback instruments for this subsection
             activePlaybackInstruments.clear();
@@ -2595,6 +2648,11 @@
         }
 
         function adjustBPM(delta) {
+            if (!isAuthenticated) {
+                alert('Please log in to change BPM');
+                return;
+            }
+
             const input = document.getElementById('bpmInput');
             let newBPM = parseInt(input.value) + delta;
             newBPM = Math.max(40, Math.min(240, newBPM));
@@ -2653,6 +2711,14 @@
         }
 
         function updateBPM() {
+            if (!isAuthenticated) {
+                alert('Please log in to change BPM');
+                // Reset to saved value
+                const savedBPM = savedPatterns[currentSong.id].bpm || 120;
+                document.getElementById('bpmInput').value = savedBPM;
+                return;
+            }
+
             const input = document.getElementById('bpmInput');
             let newBPM = parseInt(input.value);
 
@@ -2665,7 +2731,9 @@
             input.value = newBPM;
             currentBPM = newBPM;
 
-            // Note: This is a local change only, doesn't save to song level
+            // Save to song level so it persists
+            savedPatterns[currentSong.id].bpm = newBPM;
+            saveToStorage();
 
             // Restart playback if currently playing to apply new BPM
             if (isPlaying) {
