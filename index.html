@@ -134,6 +134,12 @@
         .subsection-list-name {
             flex: 1;
             color: #ccc;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .subsection-list-name:hover {
+            color: #4a9eff;
         }
 
         .subsection-play-btn {
@@ -1793,6 +1799,10 @@
                             const subName = document.createElement('div');
                             subName.className = 'subsection-list-name';
                             subName.textContent = `• ${subsectionName}`;
+                            subName.style.cursor = 'pointer';
+                            subName.onclick = () => {
+                                selectSongAndPlaySubsection(song.name, song.id, subsectionName);
+                            };
 
                             const playBtn = document.createElement('button');
                             playBtn.className = 'subsection-play-btn';
@@ -2390,6 +2400,16 @@
             renderSubsectionPlayerList();
         }
 
+        function selectSongAndPlaySubsection(name, id, subsectionName) {
+            // Navigate to player view first
+            selectSong(name, id);
+            // Then start playing the specific subsection after a brief delay
+            // to ensure the player view is fully rendered
+            setTimeout(() => {
+                playSubsection(subsectionName);
+            }, 100);
+        }
+
         function renderSubsectionPlayerList() {
             const list = document.getElementById('subsectionPlayerList');
             list.innerHTML = '';
@@ -2467,8 +2487,8 @@
             currentBPM = savedPatterns[songId].bpm || 120;
 
             // Reset and initialize playback instruments for this subsection
+            // NOTE: Do NOT add click track when playing from list - only instruments
             activePlaybackInstruments.clear();
-            activePlaybackInstruments.add('click');
             instruments.forEach(instrument => {
                 const pattern = subsectionData.patterns[instrument.id];
                 if (pattern && pattern.length > 0) {
