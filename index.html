@@ -2222,34 +2222,31 @@
             // Calculate beat duration based on BPM (quarter note)
             const beatDuration = 60000 / currentBPM;
 
-            // Countdown: 4, 3, 2, 1
-            // We show "4" immediately, then "3", "2", "1" on beats, then start on the next beat
-            let count = 3;
-            tapText.textContent = '4';
-            createClickSound(1200, 0.05, 0.4); // Countdown beep for "4"
+            // Countdown: 4, 3, 2, 1 then start immediately
+            let count = 4;
+            tapText.textContent = count.toString();
+            createClickSound(1200, 0.05, 0.4); // Countdown beep
 
             const countdownInterval = setInterval(() => {
+                count--;
                 if (count > 0) {
                     tapText.textContent = count.toString();
                     createClickSound(1200, 0.05, 0.4); // Countdown beep
-                    count--;
                 } else {
                     clearInterval(countdownInterval);
 
-                    // Start recording on the next beat after "1"
-                    setTimeout(() => {
-                        isRecording = true;
-                        tapArea.classList.remove('countdown');
-                        tapArea.classList.add('recording');
-                        recordToggleBtn.classList.remove('countdown');
-                        recordToggleBtn.classList.add('recording');
-                        recordStatus.classList.add('active');
-                        tapText.textContent = 'TAP';
-                        stopIcon.style.display = 'block';
+                    // Start recording immediately after "1" beep
+                    isRecording = true;
+                    tapArea.classList.remove('countdown');
+                    tapArea.classList.add('recording');
+                    recordToggleBtn.classList.remove('countdown');
+                    recordToggleBtn.classList.add('recording');
+                    recordStatus.classList.add('active');
+                    tapText.textContent = 'TAP';
+                    stopIcon.style.display = 'block';
 
-                        // Start playback from the beginning
-                        startPlayback();
-                    }, beatDuration);
+                    // Start playback from the beginning
+                    startPlayback();
                 }
             }, beatDuration); // Use BPM-based timing
         }
