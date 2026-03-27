@@ -1755,7 +1755,10 @@
                 addSongSection.classList.toggle('hidden', !isAuthenticated);
             }
 
-            songList.forEach(song => {
+            // Sort songs alphabetically by name
+            const sortedSongs = [...songList].sort((a, b) => a.name.localeCompare(b.name));
+
+            sortedSongs.forEach(song => {
                 const item = document.createElement('div');
                 item.className = 'song-item';
 
