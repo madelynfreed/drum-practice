@@ -2288,14 +2288,18 @@
                 return;
             }
 
-            // Add beat at the last played position (the beat the user is hearing)
+            // Place beat at the previous step to account for human reaction time
+            // Users hear a beat and tap slightly after, so we place it one step earlier
             const subsectionData = savedPatterns[currentSong.id].subsections[currentSubsection];
+            const totalSteps = totalCells;
+            const targetBeatIndex = (currentBeatIndex - 1 + totalSteps) % totalSteps;
+
             if (!subsectionData.patterns[currentInstrument]) {
                 subsectionData.patterns[currentInstrument] = [];
             }
 
             const pattern = subsectionData.patterns[currentInstrument];
-            const existingBeatIndex = pattern.findIndex(b => b.step === lastPlayedBeatIndex);
+            const existingBeatIndex = pattern.findIndex(b => b.step === targetBeatIndex);
 
             if (existingBeatIndex > -1) {
                 // Remove if already exists
@@ -2306,7 +2310,7 @@
                 }
             } else {
                 // Add if doesn't exist
-                pattern.push({ step: lastPlayedBeatIndex, accent: false });
+                pattern.push({ step: targetBeatIndex, accent: false });
                 pattern.sort((a, b) => a.step - b.step);
                 // Enable playback for this instrument immediately
                 activePlaybackInstruments.add(currentInstrument);
